@@ -20,7 +20,7 @@ The site is arranged for publishing from the `main` branch's root directory. In 
 
 - `index.html`: page markup, styles, interactions and page properties.
 - `data/results.js`: result tables.
-- `assets/animation/dream2discern.html`: the supplied self-contained animation, embedded in the video section. Replace this file to update the on-page animation. The link below the frame opens it at full size.
+- `assets/animation/dream2discern.html`: the supplied self-contained animation, embedded in the video section. To update it, replace this file and change the `?v=` value on both animation URLs in `index.html` so cached pages load the new version. The link below the frame opens it at full size.
 - `figures/`, `assets/`: figures and logos. The paper PDF is withheld from the published site until the arXiv page is available.
 - `docs/paper-notes.md`: source notes for the abstract, captions and result numbers.
 
