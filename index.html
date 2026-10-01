@@ -25,6 +25,15 @@ a:hover{color:var(--teal-ink,#1C7A73)}
 button{font:inherit}
 ::selection{background:rgba(136,100,207,.22)}
 @media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}
+@media (max-width:600px){
+  html{scroll-padding-top:112px}
+  nav[aria-label="Primary"] > div{height:auto!important;min-height:62px;flex-wrap:wrap;justify-content:space-between;gap:6px 10px!important;padding-top:6px!important;padding-bottom:6px!important}
+  nav[aria-label="Primary"] > div > a > img{height:38px!important}
+  nav[aria-label="Primary"] > div > a > span{font-size:17px!important}
+  nav[aria-label="Primary"] > div > div{order:3;flex:0 0 100%!important;justify-content:flex-start!important;max-width:100%;overflow-x:auto}
+  nav[aria-label="Primary"] > div > button{order:2}
+}
+@media (max-width:360px){header h1{font-size:40px!important}}
 </style>
 </helmet>
 <div lang="en" style="min-height:100vh;background:var(--bg,#FCFDFD);color:var(--ink,#153A43);transition:background-color .3s ease,color .3s ease">
