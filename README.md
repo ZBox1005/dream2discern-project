@@ -21,7 +21,7 @@ The site is arranged for publishing from the `main` branch's root directory. In 
 - `index.html`: page markup, styles, interactions and page properties.
 - `data/results.js`: result tables.
 - `assets/animation/dream2discern.html`: the supplied self-contained animation, embedded in the video section. Replace this file to update the on-page animation. The link below the frame opens it at full size.
-- `figures/`, `assets/`, `paper/dream2discern.pdf`: figures, logos and downloadable paper.
+- `figures/`, `assets/`: figures and logos. The paper PDF is withheld from the published site until the arXiv page is available.
 - `docs/paper-notes.md`: source notes for the abstract, captions and result numbers.
 
 `arxivUrl`, `codeUrl` and `hfUrl` remain empty until those destinations are available. The BibTeX entry marks the arXiv identifier as pending rather than showing a fabricated ID.

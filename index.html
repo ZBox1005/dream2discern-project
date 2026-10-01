@@ -79,9 +79,6 @@ button{font:inherit}
     </div>
     <a href="mailto:boxuan.zhang@rutgers.edu,ruixiang.tang@rutgers.edu" style="display:inline-block;margin:14px 0 0;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:13px;color:var(--muted,#61757B);text-decoration:none" style-hover="color:var(--teal-ink,#1C7A73)">{boxuan.zhang, ruixiang.tang}@rutgers.edu</a>
     <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin:28px 0 0">
-      <sc-if value="{{ showPdf }}" hint-placeholder-val="{{ true }}">
-        <a href="paper/dream2discern.pdf" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:8px;height:44px;padding:0 20px;border-radius:999px;background:var(--ink,#153A43);color:var(--bg,#FCFDFD);text-decoration:none;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:13px;font-weight:600" style-hover="background:var(--teal-ink,#1C7A73);color:var(--bg,#FCFDFD)">Paper PDF <span aria-hidden="true">↓</span></a>
-      </sc-if>
       <sc-if value="{{ hasArxiv }}" hint-placeholder-val="{{ false }}"><a href="{{ arxivUrl }}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:8px;height:44px;padding:0 18px;border-radius:999px;border:1px solid var(--line,#C9DFE2);background:var(--card,#FFFFFF);color:var(--ink,#153A43);text-decoration:none;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:13px;font-weight:600" style-hover="border-color:var(--teal,#269E95)">arXiv <span aria-hidden="true">↗</span></a></sc-if>
       <sc-if value="{{ noArxiv }}" hint-placeholder-val="{{ true }}"><span title="Link coming soon" style="display:inline-flex;align-items:center;gap:8px;height:44px;padding:0 10px 0 18px;border-radius:999px;border:1px dashed var(--line,#C9DFE2);color:var(--muted,#61757B);font-family:'JetBrains Mono',ui-monospace,monospace;font-size:13px;font-weight:600">arXiv <span style="padding:3px 8px;border-radius:999px;background:var(--panel,#F2F9FA);font-size:10.5px;font-weight:500;letter-spacing:.06em;text-transform:uppercase">soon</span></span></sc-if>
       <sc-if value="{{ hasCode }}" hint-placeholder-val="{{ false }}"><a href="{{ codeUrl }}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:8px;height:44px;padding:0 18px;border-radius:999px;border:1px solid var(--line,#C9DFE2);background:var(--card,#FFFFFF);color:var(--ink,#153A43);text-decoration:none;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:13px;font-weight:600" style-hover="border-color:var(--teal,#269E95)">Code <span aria-hidden="true">↗</span></a></sc-if>
@@ -661,7 +658,6 @@ button{font:inherit}
     <div style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#7FD3CB">The paper in one sentence</div>
     <p style="margin:18px 0 0;font-size:clamp(24px,3.2vw,38px);line-height:1.3;font-weight:700;text-wrap:balance">The variants are regenerated as the auditor learns, turning a limited corpus into a renewable source of hard examples and requiring no additional trajectory collection or outcome verification.</p>
     <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin:32px 0 0">
-      <sc-if value="{{ showPdf }}" hint-placeholder-val="{{ true }}"><a href="paper/dream2discern.pdf" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:8px;height:44px;padding:0 20px;border-radius:999px;background:#E8F2F3;color:#153A43;text-decoration:none;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:13px;font-weight:600" style-hover="background:#FFFFFF;color:#153A43">Read the paper <span aria-hidden="true">↓</span></a></sc-if>
       <a href="#top" style="display:inline-flex;align-items:center;height:44px;padding:0 20px;border-radius:999px;border:1px solid rgba(232,242,243,.35);color:#E8F2F3;text-decoration:none;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:13px;font-weight:600" style-hover="border-color:#7FD3CB;color:#FFFFFF">Back to top ↑</a>
     </div>
   </div>
@@ -688,7 +684,7 @@ button{font:inherit}
 
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props="{&quot;videoSrc&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Media&quot;},&quot;arxivUrl&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Links&quot;},&quot;codeUrl&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Links&quot;},&quot;hfUrl&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Links&quot;},&quot;showPdf&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Links&quot;},&quot;stepMs&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:1300,&quot;min&quot;:700,&quot;max&quot;:2600,&quot;step&quot;:100,&quot;unit&quot;:&quot;ms&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Motion&quot;}}">
+<script type="text/x-dc" data-dc-script data-props="{&quot;videoSrc&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Media&quot;},&quot;arxivUrl&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Links&quot;},&quot;codeUrl&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Links&quot;},&quot;hfUrl&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Links&quot;},&quot;stepMs&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:1300,&quot;min&quot;:700,&quot;max&quot;:2600,&quot;step&quot;:100,&quot;unit&quot;:&quot;ms&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Motion&quot;}}">
 const MONO = "'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace";
 const DARK = {
   bg: '#0D1A1E', panel: '#12252B', card: '#152B32', ink: '#E3EEF0', muted: '#9AB0B5', line: '#2B4850', line2: '#1F383F',
@@ -1031,7 +1027,6 @@ class Component extends DCLogic {
       arxivUrl: arxiv, hasArxiv: !!arxiv, noArxiv: !arxiv,
       codeUrl: code, hasCode: !!code, noCode: !code,
       hfUrl: hf, hasHf: !!hf, noHf: !hf,
-      showPdf: P.showPdf ?? true,
       videoSrc: vsrc, hasVideo: !!vsrc, noVideo: !vsrc,
       videoLink: P.videoLink ?? 'https://claude.ai/artifact/3nvAskB9qmrsMe9fAtHmhg',
       openFig: e => {
