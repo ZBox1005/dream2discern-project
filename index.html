@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dream2Discern: Learning from Hard Latent Variants for Runtime Failure Prediction in Multi-Agent Systems</title>
+<meta name="description" content="Dream2Discern is a runtime auditor for LLM-based multi-agent systems that learns from hard latent variants built with its own prediction loss, without collecting or verifying additional trajectories.">
+<meta property="og:title" content="Dream2Discern">
+<meta property="og:description" content="Learning from Hard Latent Variants for Runtime Failure Prediction in Multi-Agent Systems">
+<meta property="og:image" content="figures/fig3-overview.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/png" href="assets/brand/robot.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Charis+SIL:ital,wght@0,400;0,700;1,400;1,700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap">
+<style>
+html{scroll-behavior:smooth;scroll-padding-top:76px}
+body{margin:0;background:var(--bg,#FCFDFD);color:var(--ink,#153A43);font-family:'Charis SIL',Charter,'Bitstream Charter',Georgia,serif;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+a{color:var(--link,#1F77B8);text-underline-offset:3px;text-decoration-thickness:1px}
+a:hover{color:var(--teal-ink,#1C7A73)}
+button{font:inherit}
+::selection{background:rgba(136,100,207,.22)}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}
+</style>
+</helmet>
+<div lang="en" style="min-height:100vh;background:var(--bg,#FCFDFD);color:var(--ink,#153A43);transition:background-color .3s ease,color .3s ease">
+
+<nav aria-label="Primary" style="position:sticky;top:0;z-index:50;background:var(--navbg,rgba(252,253,253,.86));backdrop-filter:saturate(1.4) blur(12px);-webkit-backdrop-filter:saturate(1.4) blur(12px);border-bottom:1px solid var(--line2,#E2EEF0)">
+  <div style="max-width:1160px;margin:0 auto;padding:0 clamp(16px,4vw,40px);height:62px;display:flex;align-items:center;gap:16px">
+    <a href="#top" style="display:flex;align-items:center;gap:10px;flex:none;color:var(--ink,#153A43);text-decoration:none">
+      <img src="assets/brand/robot-dream.png" alt="" style="display:block;height:44px;width:auto">
+      <span style="font-size:19px;font-weight:700;letter-spacing:-.01em">Dream<span style="color:var(--dream,#8864CF)">2</span>Discern</span>
+    </a>
+    <div style="flex:1;min-width:0;display:flex;justify-content:flex-end;gap:2px;overflow-x:auto;scrollbar-width:none">
+      <a href="#problem" style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--muted,#61757B);text-decoration:none;padding:8px 10px;border-radius:8px;white-space:nowrap" style-hover="color:var(--ink,#153A43);background:var(--panel,#F2F9FA)">Problem</a>
+      <a href="#method" style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--muted,#61757B);text-decoration:none;padding:8px 10px;border-radius:8px;white-space:nowrap" style-hover="color:var(--ink,#153A43);background:var(--panel,#F2F9FA)">Method</a>
+      <a href="#results" style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--muted,#61757B);text-decoration:none;padding:8px 10px;border-radius:8px;white-space:nowrap" style-hover="color:var(--ink,#153A43);background:var(--panel,#F2F9FA)">Results</a>
+      <a href="#case" style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--muted,#61757B);text-decoration:none;padding:8px 10px;border-radius:8px;white-space:nowrap" style-hover="color:var(--ink,#153A43);background:var(--panel,#F2F9FA)">Case study</a>
+      <a href="#bibtex" style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--muted,#61757B);text-decoration:none;padding:8px 10px;border-radius:8px;white-space:nowrap" style-hover="color:var(--ink,#153A43);background:var(--panel,#F2F9FA)">BibTeX</a>
+    </div>
+    <button type="button" onClick="{{ toggleTheme }}" aria-label="Toggle dark mode" style="flex:none;display:inline-flex;align-items:center;gap:7px;height:36px;padding:0 12px;border-radius:999px;border:1px solid var(--line,#C9DFE2);background:var(--card,#FFFFFF);color:var(--ink,#153A43);cursor:pointer;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12px;font-weight:500" style-hover="border-color:var(--teal,#269E95)">
+      <span aria-hidden="true" style="font-size:14px;line-height:1">◐</span>
+      <sc-if value="{{ isLight }}" hint-placeholder-val="{{ true }}"><span>Dark</span></sc-if>
+      <sc-if value="{{ isDark }}" hint-placeholder-val="{{ false }}"><span>Light</span></sc-if>
+    </button>
+  </div>
+</nav>
+
+<header id="top" data-screen-label="Hero" style="padding:clamp(44px,7vw,88px) 0 clamp(32px,4vw,48px)">
+  <div style="max-width:1160px;margin:0 auto;padding:0 clamp(18px,4vw,40px);display:flex;flex-direction:column;align-items:center;text-align:center">
+    <div style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--teal-ink,#1C7A73)">Research preprint · October 2026</div>
+    <h1 style="margin:20px 0 0;display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:center;gap:clamp(10px,1.4vw,18px);font-size:clamp(46px,7vw,80px);line-height:1;letter-spacing:-.025em;font-weight:700">
+      <img src="assets/brand/robot-dream.png" alt="" style="display:block;height:1.4em;width:auto;margin-bottom:.02em">
+      <span>Dream<span style="color:var(--dream,#8864CF)">2</span>Discern</span>
+    </h1>
+    <p style="margin:20px 0 0;max-width:900px;font-size:clamp(22px,2.6vw,30px);line-height:1.25;font-weight:700;letter-spacing:-.01em;text-wrap:balance">Learning from Hard Latent Variants for Runtime Failure Prediction in Multi-Agent Systems</p>
+    <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:6px 26px;margin:30px 0 0;font-size:19px;font-weight:700">
+      <span>Boxuan Zhang<sup style="margin-left:2px;font-size:.6em;font-weight:400;color:var(--teal-ink,#1C7A73)">1</sup></span>
+      <span>Jianing Zhu<sup style="margin-left:2px;font-size:.6em;font-weight:400;color:var(--teal-ink,#1C7A73)">2</sup></span>
+      <span>Xiaotian Han<sup style="margin-left:2px;font-size:.6em;font-weight:400;color:var(--teal-ink,#1C7A73)">3</sup></span>
+      <span>Ruixiang Tang<sup style="margin-left:2px;font-size:.6em;font-weight:400;color:var(--teal-ink,#1C7A73)">1</sup></span>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:10px 24px;margin:14px 0 0;font-size:16px;color:var(--muted,#61757B)">
+      <span style="display:inline-flex;align-items:center;gap:7px"><sup style="font-size:.7em">1</sup><img src="assets/rutgers.png" alt="" style="display:block;height:19px;width:auto">Rutgers University</span>
+      <span style="display:inline-flex;align-items:center;gap:7px"><sup style="font-size:.7em">2</sup><img src="assets/brand/ut-shield.png" alt="" style="display:block;height:21px;width:auto">The University of Texas at Austin</span>
+      <span style="display:inline-flex;align-items:center;gap:7px"><sup style="font-size:.7em">3</sup><img src="assets/amazon.png" alt="Amazon" style="display:block;height:19px;width:auto;margin-top:5px;filter:var(--logo-filter,none)"></span>
+    </div>
+    <a href="mailto:boxuan.zhang@rutgers.edu,ruixiang.tang@rutgers.edu" style="display:inline-block;margin:14px 0 0;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:13px;color:var(--muted,#61757B);text-decoration:none" style-hover="color:var(--teal-ink,#1C7A73)">{boxuan.zhang, ruixiang.tang}@rutgers.edu</a>
+    <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin:28px 0 0">
+      <sc-if value="{{ showPdf }}" hint-placeholder-val="{{ true }}">
+        <a href="paper/dream2discern.pdf" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:8px;height:44px;padding:0 20px;border-radius:999px;background:var(--ink,#153A43);color:var(--bg,#FCFDFD);text-decoration:none;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:13px;font-weight:600" style-hover="background:var(--teal-ink,#1C7A73);color:var(--bg,#FCFDFD)">Paper PDF <span aria-hidden="true">↓</span></a>
+      </sc-if>
+      <sc-if value="{{ hasArxiv }}" hint-placeholder-val="{{ false }}"><a href="{{ arxivUrl }}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:8px;height:44px;padding:0 18px;border-radius:999px;border:1px solid var(--line,#C9DFE2);background:var(--card,#FFFFFF);color:var(--ink,#153A43);text-decoration:none;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:13px;font-weight:600" style-hover="border-color:var(--teal,#269E95)">arXiv <span aria-hidden="true">↗</span></a></sc-if>
+      <sc-if value="{{ noArxiv }}" hint-placeholder-val="{{ true }}"><span title="Link coming soon" style="display:inline-flex;align-items:center;gap:8px;height:44px;padding:0 10px 0 18px;border-radius:999px;border:1px dashed var(--line,#C9DFE2);color:var(--muted,#61757B);font-family:'JetBrains Mono',ui-monospace,monospace;font-size:13px;font-weight:600">arXiv <span style="padding:3px 8px;border-radius:999px;background:var(--panel,#F2F9FA);font-size:10.5px;font-weight:500;letter-spacing:.06em;text-transform:uppercase">soon</span></span></sc-if>
+      <sc-if value="{{ hasCode }}" hint-placeholder-val="{{ false }}"><a href="{{ codeUrl }}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:8px;height:44px;padding:0 18px;border-radius:999px;border:1px solid var(--line,#C9DFE2);background:var(--card,#FFFFFF);color:var(--ink,#153A43);text-decoration:none;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:13px;font-weight:600" style-hover="border-color:var(--teal,#269E95)">Code <span aria-hidden="true">↗</span></a></sc-if>
+      <sc-if value="{{ noCode }}" hint-placeholder-val="{{ true }}"><span title="Link coming soon" style="display:inline-flex;align-items:center;gap:8px;height:44px;padding:0 10px 0 18px;border-radius:999px;border:1px dashed var(--line,#C9DFE2);color:var(--muted,#61757B);font-family:'JetBrains Mono',ui-monospace,monospace;font-size:13px;font-weight:600">Code <span style="padding:3px 8px;border-radius:999px;background:var(--panel,#F2F9FA);font-size:10.5px;font-weight:500;letter-spacing:.06em;text-transform:uppercase">soon</span></span></sc-if>
+      <sc-if value="{{ hasHf }}" hint-placeholder-val="{{ false }}"><a href="{{ hfUrl }}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:8px;height:44px;padding:0 18px;border-radius:999px;border:1px solid var(--line,#C9DFE2);background:var(--card,#FFFFFF);color:var(--ink,#153A43);text-decoration:none;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:13px;font-weight:600" style-hover="border-color:var(--teal,#269E95)">Hugging Face <span aria-hidden="true">↗</span></a></sc-if>
+      <sc-if value="{{ noHf }}" hint-placeholder-val="{{ true }}"><span title="Link coming soon" style="display:inline-flex;align-items:center;gap:8px;height:44px;padding:0 10px 0 18px;border-radius:999px;border:1px dashed var(--line,#C9DFE2);color:var(--muted,#61757B);font-family:'JetBrains Mono',ui-monospace,monospace;font-size:13px;font-weight:600">Hugging Face <span style="padding:3px 8px;border-radius:999px;background:var(--panel,#F2F9FA);font-size:10.5px;font-weight:500;letter-spacing:.06em;text-transform:uppercase">soon</span></span></sc-if>
+      <a href="#bibtex" style="display:inline-flex;align-items:center;gap:8px;height:44px;padding:0 18px;border-radius:999px;border:1px solid var(--line,#C9DFE2);background:var(--card,#FFFFFF);color:var(--ink,#153A43);text-decoration:none;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:13px;font-weight:600" style-hover="border-color:var(--teal,#269E95)">BibTeX</a>
+    </div>
+  </div>
+</header>
+
+<section id="video" aria-label="Project animation" data-screen-label="Video" style="padding:0 0 clamp(36px,5vw,56px)">
+  <div style="max-width:1160px;margin:0 auto;padding:0 clamp(18px,4vw,40px)">
+    <div style="position:relative;aspect-ratio:16/9;border-radius:18px;overflow:hidden;background:#0F2329;box-shadow:0 1px 2px rgba(21,58,67,.08),0 28px 64px -32px rgba(21,58,67,.5)">
+      <sc-if value="{{ hasVideo }}" hint-placeholder-val="{{ false }}">
+        <video ref="{{ videoRef }}" loop="loop" preload="none" aria-label="Dream2Discern project animation" style="display:block;width:100%;height:100%;object-fit:contain;background:#0F2329"></video>
+      </sc-if>
+      <sc-if value="{{ noVideo }}" hint-placeholder-val="{{ true }}">
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;text-align:center;background:repeating-linear-gradient(135deg,#12282E 0 14px,#0F2329 14px 28px);color:#E3EEF0">
+          <span style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#7FD3CB">Project animation</span>
+          <p style="margin:0;max-width:560px;font-size:clamp(20px,2.4vw,28px);line-height:1.3;font-weight:700;text-wrap:balance">The Dream2Discern animation plays here automatically.</p>
+          <span style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11.5px;color:#93A8AD">Muted autoplay on loop, loaded when scrolled into view · add assets/video/dream2discern.mp4 and set videoSrc</span>
+        </div>
+      </sc-if>
+    </div>
+  </div>
+</section>
+
+<section aria-label="Key results" data-screen-label="Stats" style="padding:0 0 clamp(56px,8vw,96px)">
+  <div style="max-width:1160px;margin:0 auto;padding:0 clamp(18px,4vw,40px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,232px),1fr));gap:14px">
+    <div style="padding:22px 22px 20px;border:1px solid var(--line2,#E2EEF0);border-radius:16px;background:var(--card,#FFFFFF)">
+      <div style="font-size:clamp(40px,4.4vw,52px);line-height:1;font-weight:700;letter-spacing:-.02em;color:var(--teal-ink,#1C7A73)">&gt;90%</div>
+      <p style="margin:12px 0 0;font-size:16.5px;line-height:1.4">trajectory-level weighted accuracy on both benchmarks</p>
+      <p style="margin:10px 0 0;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12px;line-height:1.5;color:var(--muted,#61757B)">AFTraj-2K 91.47 · StepShield 90.28</p>
+    </div>
+    <div style="padding:22px 22px 20px;border:1px solid var(--line2,#E2EEF0);border-radius:16px;background:var(--card,#FFFFFF)">
+      <div style="font-size:clamp(40px,4.4vw,52px);line-height:1;font-weight:700;letter-spacing:-.02em;color:var(--dream-ink,#6F4CB8)">+11.11</div>
+      <p style="margin:12px 0 0;font-size:16.5px;line-height:1.4">wACC points over the strongest auditor baseline</p>
+      <p style="margin:10px 0 0;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12px;line-height:1.5;color:var(--muted,#61757B)">StepShield · 90.28 vs. AgentForesight-7B 79.17</p>
+    </div>
+    <div style="padding:22px 22px 20px;border:1px solid var(--line2,#E2EEF0);border-radius:16px;background:var(--card,#FFFFFF)">
+      <div style="font-size:clamp(40px,4.4vw,52px);line-height:1;font-weight:700;letter-spacing:-.02em;color:var(--amber-ink,#93630F)">0</div>
+      <p style="margin:12px 0 0;font-size:16.5px;line-height:1.4">additional trajectories collected or verified</p>
+      <p style="margin:10px 0 0;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12px;line-height:1.5;color:var(--muted,#61757B)">Hard variants are built inside the auditor</p>
+    </div>
+    <div style="padding:22px 22px 20px;border:1px solid var(--line2,#E2EEF0);border-radius:16px;background:var(--card,#FFFFFF)">
+      <div style="font-size:clamp(40px,4.4vw,52px);line-height:1;font-weight:700;letter-spacing:-.02em;color:var(--link,#1F77B8)">4B</div>
+      <p style="margin:12px 0 0;font-size:16.5px;line-height:1.4">auditor exceeds Claude-Sonnet-4.6 on StepShield</p>
+      <p style="margin:10px 0 0;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12px;line-height:1.5;color:var(--muted,#61757B)">wACC 90.28 vs. 87.04 · TWA 57.67 vs. 56.79</p>
+    </div>
+  </div>
+</section>
+
+<section id="summary" data-screen-label="Overview" style="padding:clamp(56px,8vw,96px) 0;background:var(--panel,#F2F9FA);border-top:1px solid var(--line2,#E2EEF0);border-bottom:1px solid var(--line2,#E2EEF0)">
+  <div style="max-width:1160px;margin:0 auto;padding:0 clamp(18px,4vw,40px)">
+    <div style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--teal-ink,#1C7A73);text-align:center">Overview</div>
+    <h2 style="margin:12px 0 0;text-align:center;font-size:clamp(30px,4vw,44px);line-height:1.1;letter-spacing:-.015em"><em>Dream2Discern</em> at a glance</h2>
+    <ol style="list-style:none;margin:32px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:clamp(22px,3vw,40px)">
+      <li style="display:grid;grid-row:span 3;grid-template-rows:subgrid;row-gap:0;padding-top:18px;border-top:2px solid var(--amber,#E3A33B)">
+        <div style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12px;font-weight:600;letter-spacing:.08em;color:var(--amber-ink,#93630F)">01</div>
+        <h3 style="margin:10px 0 8px;font-size:21px;line-height:1.3">Corpus augmentation is costly and untargeted</h3>
+        <p style="margin:0;font-size:16.5px;line-height:1.6;color:var(--muted,#61757B);text-align:justify;hyphens:auto;text-wrap:pretty" data-balance="1">Runtime auditors learn from a limited labeled corpus. New trajectories need rollouts and verification, edits can invalidate outcome labels, and broader coverage does not reveal hard cases.</p>
+      </li>
+      <li style="display:grid;grid-row:span 3;grid-template-rows:subgrid;row-gap:0;padding-top:18px;border-top:2px solid var(--dream,#8864CF)">
+        <div style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12px;font-weight:600;letter-spacing:.08em;color:var(--dream-ink,#6F4CB8)">02</div>
+        <h3 style="margin:10px 0 8px;font-size:21px;line-height:1.3"><em>Dream</em> constructs hard latent variants</h3>
+        <p style="margin:0;font-size:16.5px;line-height:1.6;color:var(--muted,#61757B);text-align:justify;hyphens:auto;text-wrap:pretty" data-balance="1">With the auditor fixed, a bounded, low-rank perturbation of its query and value projections is chosen to increase batch prediction loss, yielding hard latent variants of recorded prefixes.</p>
+      </li>
+      <li style="display:grid;grid-row:span 3;grid-template-rows:subgrid;row-gap:0;padding-top:18px;border-top:2px solid var(--teal,#269E95)">
+        <div style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12px;font-weight:600;letter-spacing:.08em;color:var(--teal-ink,#1C7A73)">03</div>
+        <h3 style="margin:10px 0 8px;font-size:21px;line-height:1.3"><em>Discern</em> learns from them with the original labels</h3>
+        <p style="margin:0;font-size:16.5px;line-height:1.6;color:var(--muted,#61757B);text-align:justify;hyphens:auto;text-wrap:pretty" data-balance="1">The auditor learns from these variants with the recorded labels as they are regenerated each batch. At runtime the perturbation is discarded and a calibrated threshold predicts failure.</p>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<section id="abstract" data-screen-label="Abstract" style="padding:clamp(56px,8vw,96px) 0">
+  <div style="max-width:880px;margin:0 auto;padding:0 clamp(18px,4vw,40px)">
+    <div style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--teal-ink,#1C7A73);text-align:center">Abstract</div>
+    <p style="margin:18px 0 0;font-size:clamp(18px,1.4vw,20px);line-height:1.72;text-align:justify;hyphens:auto;text-wrap:pretty" data-balance="1">Reliable deployment of LLM-based multi-agent systems calls for runtime auditors that predict terminal outcomes from observed execution prefixes. These auditors typically learn from a limited corpus of trajectories with verified outcomes. Expanding this corpus requires costly execution and verification, yet broader failure coverage alone provides no explicit criterion for identifying prefixes that the current auditor finds difficult to classify. To this end, we propose <strong><em>Dream2Discern</em></strong>, a runtime auditor trained through implicit augmentation guided by its own prediction loss. During <em>Dream</em>, we select perturbations of the auditor's representation operators to increase prediction loss on recorded prefixes, yielding <em>hard latent variants</em>. During <em>Discern</em>, the auditor learns to predict execution outcomes from these variants using the original labels. The variants are regenerated as the auditor learns, turning a limited corpus into a renewable source of hard examples and requiring no additional trajectory collection or outcome verification. Extensive evaluations on AFTraj-2K and StepShield show that <em>Dream2Discern</em> outperforms competitive failure auditors and achieves over 90% trajectory-level weighted accuracy on both benchmarks while balancing prediction accuracy and timeliness.</p>
+  </div>
+</section>
+
+<section id="problem" data-screen-label="01 Problem" style="padding:clamp(56px,8vw,104px) 0;border-top:1px solid var(--line2,#E2EEF0)">
+  <div style="max-width:1160px;margin:0 auto;padding:0 clamp(18px,4vw,40px)">
+    <div style="display:flex;align-items:center;gap:14px;margin:0 0 18px"><span style="flex:1;height:1px;background:var(--line2,#E2EEF0)"></span>
+      <span style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--amber-ink,#93630F)">01 · Motivation</span>
+      <span style="flex:1;height:1px;background:var(--line2,#E2EEF0)"></span>
+    </div>
+    <h2 style="margin:0 auto;max-width:920px;text-align:center;font-size:clamp(30px,4.2vw,46px);line-height:1.12;letter-spacing:-.015em;text-wrap:balance">Trajectory augmentation is costly and does not target the auditor's hard cases</h2>
+    <figure style="margin:36px 0 0">
+      <button type="button" onClick="{{ openFig }}" aria-label="Enlarge Figure 1" style="position:relative;display:block;width:100%;padding:clamp(10px,2vw,24px);border:1px solid var(--line2,#E2EEF0);border-radius:16px;background:var(--figbg,#FFFFFF);cursor:zoom-in">
+        <img src="figures/fig1-motivation.png" alt="Three panels: runtime auditing from observed prefixes, trajectory collection and editing with their costs, and auditor-dependent augmentation." loading="lazy" style="display:block;width:100%;height:auto">
+        <span aria-hidden="true" style="position:absolute;top:10px;right:10px;display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--panel,#F2F9FA);color:var(--muted,#61757B);font-size:14px">⤢</span>
+      </button>
+      <figcaption style="margin:12px 2px 0;font-size:15px;line-height:1.55;color:var(--muted,#61757B);text-align:justify;hyphens:auto;text-wrap:pretty" data-balance="1"><strong style="color:var(--ink,#153A43)">Figure 1. Motivation of <em>Dream2Discern</em>.</strong> (a) A runtime auditor predicts terminal outcomes from observed prefixes but learns from a limited labeled corpus. (b) Trajectory augmentation seeks broader failure coverage, but collection is costly and editing can invalidate outcome labels (right). Broader coverage alone does not identify prefixes that the current auditor finds hard to classify. (c) We construct hard latent variants through operator perturbations chosen to increase batch prediction loss, then train on these variants while keeping recorded prefixes and labels unchanged.</figcaption>
+    </figure>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:18px;margin:40px 0 0">
+      <div style="display:grid;grid-row:span 4;grid-template-rows:subgrid;row-gap:0;padding:clamp(20px,2.4vw,28px);border:1px solid var(--line2,#E2EEF0);border-radius:16px;background:var(--card,#FFFFFF)">
+        <div style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--amber-ink,#93630F)">Trajectory collection · Costly</div>
+        <h3 style="margin:10px 0 8px;font-size:22px;line-height:1.25">Each new label requires a rollout and outcome verification</h3>
+        <p style="margin:0;font-size:16.5px;line-height:1.6;color:var(--muted,#61757B);text-align:justify;hyphens:auto;text-wrap:pretty" data-balance="1">Averaged acquisition times reach tens of seconds per trajectory, making repeated corpus expansion time-consuming. Mean rollout plus verification time on AFTraj-2K:</p>
+        <div style="display:grid;grid-template-columns:auto 1fr auto;gap:12px 12px;align-items:center;margin:20px 0 0;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:13px">
+          <span>Math</span><div style="height:10px;border-radius:999px;background:var(--amber-tint,#FBF3E4)"><div style="width:72.75%;height:100%;border-radius:999px;background:var(--amber,#E3A33B)"></div></div><span style="text-align:right">87.3 s</span>
+          <span>Coding</span><div style="height:10px;border-radius:999px;background:var(--amber-tint,#FBF3E4)"><div style="width:48.83%;height:100%;border-radius:999px;background:var(--amber,#E3A33B)"></div></div><span style="text-align:right">58.6 s</span>
+          <span>HotpotQA</span><div style="height:10px;border-radius:999px;background:var(--amber-tint,#FBF3E4)"><div style="width:60.75%;height:100%;border-radius:999px;background:var(--amber,#E3A33B)"></div></div><span style="text-align:right">72.9 s</span>
+          <span>GAIA</span><div style="height:10px;border-radius:999px;background:var(--amber-tint,#FBF3E4)"><div style="width:89.5%;height:100%;border-radius:999px;background:var(--amber,#E3A33B)"></div></div><span style="text-align:right">107.4 s</span>
+        </div>
+      </div>
+      <div style="display:grid;grid-row:span 4;grid-template-rows:subgrid;row-gap:0;padding:clamp(20px,2.4vw,28px);border:1px solid var(--line2,#E2EEF0);border-radius:16px;background:var(--card,#FFFFFF)">
+        <div style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--dream-ink,#6F4CB8)">Trajectory editing · Unstable outcomes</div>
+        <h3 style="margin:10px 0 8px;font-size:22px;line-height:1.25">Edited trajectories cannot reuse their source labels</h3>
+        <p style="margin:0;font-size:16.5px;line-height:1.6;color:var(--muted,#61757B);text-align:justify;hyphens:auto;text-wrap:pretty" data-balance="1">We modify an action or tool response, resume execution and verify again, obtaining 326 continuations. Among those from failed source trajectories, 85.7% succeed.</p>
+        <div style="display:grid;grid-template-columns:auto 1fr 1fr;gap:6px;margin:20px 0 0;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:13px">
+          <span></span>
+          <span style="padding:0 0 4px;text-align:center;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted,#61757B)">Edited: success</span>
+          <span style="padding:0 0 4px;text-align:center;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted,#61757B)">Edited: failure</span>
+          <span style="align-self:center;padding-right:6px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted,#61757B)">Was success</span>
+          <div style="padding:12px 8px;border-radius:10px;text-align:center;background:var(--panel,#F2F9FA)"><strong>203</strong> <span style="color:var(--muted,#61757B)">94.9%</span></div>
+          <div style="padding:12px 8px;border-radius:10px;text-align:center;background:var(--dream-tint,#F3EEFB);box-shadow:inset 0 0 0 1.5px var(--dream,#8864CF)"><strong>11</strong> <span style="color:var(--muted,#61757B)">5.1%</span></div>
+          <span style="align-self:center;padding-right:6px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted,#61757B)">Was failure</span>
+          <div style="padding:12px 8px;border-radius:10px;text-align:center;background:var(--dream-tint,#F3EEFB);box-shadow:inset 0 0 0 1.5px var(--dream,#8864CF)"><strong>96</strong> <span style="color:var(--muted,#61757B)">85.7%</span></div>
+          <div style="padding:12px 8px;border-radius:10px;text-align:center;background:var(--panel,#F2F9FA)"><strong>16</strong> <span style="color:var(--muted,#61757B)">14.3%</span></div>
+        </div>
+      </div>
+    </div>
+    <p style="margin:40px auto 0;max-width:920px;font-size:clamp(17px,1.3vw,18.5px);line-height:1.7;text-align:center;text-wrap:balance">More fundamentally, broader failure coverage alone provides <strong>no explicit criterion</strong> for identifying trajectories whose prefixes the current auditor <strong style="color:var(--alert-ink,#C2414F);background:linear-gradient(transparent 62%,var(--alert-tint,#FCEBED) 62%)">finds difficult to assess</strong>.</p>
+    <div style="margin:40px auto 0;max-width:900px;padding:clamp(28px,4vw,48px);border-radius:20px;background:var(--panel,#F2F9FA);border:1px solid var(--line,#C9DFE2);text-align:center">
+      <div style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--teal-ink,#1C7A73)">Research question</div>
+      <p style="margin:16px 0 0;font-size:clamp(24px,3vw,34px);line-height:1.3;font-weight:700;font-style:italic;text-wrap:balance">Can we identify and exploit the current auditor's <span style="color:var(--alert-ink,#C2414F);background:linear-gradient(transparent 62%,var(--alert-tint,#FCEBED) 62%)">hard cases</span> <span style="color:var(--teal-ink,#1C7A73)">without acquiring additional labeled trajectories</span>?</p>
+    </div>
+  </div>
+</section>
+
+<section id="idea" data-screen-label="02 Idea" style="padding:clamp(56px,8vw,104px) 0;background:var(--panel,#F2F9FA);border-top:1px solid var(--line2,#E2EEF0);border-bottom:1px solid var(--line2,#E2EEF0)">
+  <div style="max-width:1160px;margin:0 auto;padding:0 clamp(18px,4vw,40px)">
+    <div style="display:flex;align-items:center;gap:14px;margin:0 0 18px"><span style="flex:1;height:1px;background:var(--line,#C9DFE2)"></span>
+      <span style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--dream-ink,#6F4CB8)">02 · Key insight</span>
+      <span style="flex:1;height:1px;background:var(--line,#C9DFE2)"></span>
+    </div>
+    <h2 style="margin:0 auto;max-width:920px;text-align:center;font-size:clamp(30px,4.2vw,46px);line-height:1.12;letter-spacing:-.015em;text-wrap:balance">Prediction loss as the criterion for hard variants</h2>
+    <p style="margin:26px auto 0;max-width:920px;text-align:center;font-size:clamp(22px,2.4vw,28px);line-height:1.38;font-weight:700;text-wrap:balance">Our key insight is to use <span style="color:var(--dream-ink,#6F4CB8)">the auditor's own prediction loss</span> as a criterion for deciding which variants to construct.</p>
+    <div style="margin:40px 0 0;padding:clamp(20px,2.4vw,28px);border:1px solid var(--line2,#E2EEF0);border-radius:18px;background:var(--card,#FFFFFF)">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:clamp(18px,3vw,36px);align-items:start">
+        <div>
+          <div style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--dream-ink,#6F4CB8)">Preliminary evidence</div>
+          <h3 style="margin:10px 0 8px;font-size:22px;line-height:1.25">Edits do not improve held-out prediction, while a loss-guided perturbation makes it harder</h3>
+          <p style="margin:0;font-size:16.5px;line-height:1.6;color:var(--muted,#61757B);text-align:justify;hyphens:auto;text-wrap:pretty" data-balance="1">Original and edited prefixes, encoded by the same frozen LLM, overlap in a shared PCA projection. With the encoder and training budget fixed, adding verified edits does not lower held-out class-balanced BCE. A perturbation selected only on training prefixes, applied temporarily with the original head fixed, raises the same held-out loss.</p>
+          <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:20px 0 0">
+            <div style="padding:12px 10px;border-radius:12px;background:var(--panel,#F2F9FA)"><div style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted,#61757B)">Original</div><div style="margin-top:4px;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:20px;font-weight:600">0.520</div></div>
+            <div style="padding:12px 10px;border-radius:12px;background:var(--dream-tint,#F3EEFB)"><div style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--dream-ink,#6F4CB8)">+Edited</div><div style="margin-top:4px;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:20px;font-weight:600">0.578</div></div>
+            <div style="padding:12px 10px;border-radius:12px;background:var(--teal-tint,#E6F4F2)"><div style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--teal-ink,#1C7A73)">+Dream</div><div style="margin-top:4px;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:20px;font-weight:600">0.704</div></div>
+          </div>
+        </div>
+        <figure style="margin:0">
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:10px">
+            <button type="button" onClick="{{ openFig }}" aria-label="Enlarge Figure 2a" style="position:relative;display:block;width:100%;padding:8px;border:1px solid var(--line2,#E2EEF0);border-radius:12px;background:var(--figbg,#FFFFFF);cursor:zoom-in">
+              <img src="figures/fig2a-overlap.png" alt="PCA projection where original and edited prefix representations overlap." loading="lazy" style="display:block;width:100%;height:auto">
+              <span style="display:block;margin-top:6px;font-size:13.5px;font-weight:700;color:#153A43">(a) Representation overlap</span>
+            </button>
+            <button type="button" onClick="{{ openFig }}" aria-label="Enlarge Figure 2b" style="position:relative;display:block;width:100%;padding:8px;border:1px solid var(--line2,#E2EEF0);border-radius:12px;background:var(--figbg,#FFFFFF);cursor:zoom-in">
+              <img src="figures/fig2b-heldout.png" alt="Held-out loss contours: Original 0.520, plus Edited 0.578, plus Dream 0.704." loading="lazy" style="display:block;width:100%;height:auto">
+              <span style="display:block;margin-top:6px;font-size:13.5px;font-weight:700;color:#153A43">(b) Held-out prediction loss</span>
+            </button>
+          </div>
+          <figcaption style="margin:12px 2px 0;font-size:14.5px;line-height:1.55;color:var(--muted,#61757B);text-align:justify;hyphens:auto;text-wrap:pretty" data-balance="1"><strong style="color:var(--ink,#153A43)">Figure 2.</strong> (a) Original and edited prefixes overlap in a shared PCA projection. (b) Training with edits does not reduce held-out class-balanced BCE. A temporary <em>Dream</em> perturbation selected on training prefixes raises this loss with the <em>Original</em> head fixed.</figcaption>
+        </figure>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="method" data-screen-label="03 Method" style="padding:clamp(56px,8vw,104px) 0">
+  <div style="max-width:1160px;margin:0 auto;padding:0 clamp(18px,4vw,40px)">
+    <div style="display:flex;align-items:center;gap:14px;margin:0 0 18px"><span style="flex:1;height:1px;background:var(--line2,#E2EEF0)"></span>
+      <span style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--teal-ink,#1C7A73)">03 · Method</span>
+      <span style="flex:1;height:1px;background:var(--line2,#E2EEF0)"></span>
+    </div>
+    <h2 style="margin:0 auto;max-width:920px;text-align:center;font-size:clamp(30px,4.2vw,46px);line-height:1.12;letter-spacing:-.015em;text-wrap:balance">Alternating <em>Dream</em> and <em>Discern</em> steps</h2>
+    <figure style="margin:36px 0 0">
+      <button type="button" onClick="{{ openFig }}" aria-label="Enlarge Figure 3" style="position:relative;display:block;width:100%;padding:clamp(10px,2vw,24px);border:1px solid var(--line2,#E2EEF0);border-radius:16px;background:var(--figbg,#FFFFFF);cursor:zoom-in">
+        <img src="figures/fig3-overview.png" alt="Overview: labeled prefixes, Dream, Discern, and runtime auditing." loading="lazy" style="display:block;width:100%;height:auto">
+        <span aria-hidden="true" style="position:absolute;top:10px;right:10px;display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--panel,#F2F9FA);color:var(--muted,#61757B);font-size:14px">⤢</span>
+      </button>
+      <figcaption style="margin:12px 2px 0;font-size:15px;line-height:1.55;color:var(--muted,#61757B);text-align:justify;hyphens:auto;text-wrap:pretty" data-balance="1"><strong style="color:var(--ink,#153A43)">Figure 3. Overview of <em>Dream2Discern</em>.</strong> ① <em>Labeled prefixes.</em> We form a class-balanced batch from recorded success and failure prefixes, keeping their inputs and outcome labels unchanged throughout the training steps. ② <em>Dream.</em> With the auditor fixed, we search for shared, bounded, low-rank perturbations to its query and value projection weights that increase batch prediction loss. ③ <em>Discern.</em> Holding the selected perturbation fixed, we update the LoRA adapters and prediction head to minimize the loss on the resulting hard latent variants. ④ <em>Runtime auditing.</em> We discard the perturbation and apply a calibrated threshold to each prefix score to predict failure during execution.</figcaption>
+    </figure>
+
+    <div ref="{{ loopRef }}" style="margin:44px 0 0;border:1px solid var(--line,#C9DFE2);border-radius:20px;background:var(--card,#FFFFFF);overflow:hidden">
+      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px 18px;padding:18px 22px;border-bottom:1px solid var(--line2,#E2EEF0)">
+        <div style="display:flex;flex-direction:column;gap:5px;margin-right:auto">
+          <span style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--teal-ink,#1C7A73)">Interactive · schematic</span>
+          <span style="font-size:21px;font-weight:700;line-height:1.25"><em>Dream</em> and <em>Discern</em> alternate throughout training</span>
+        </div>
+        <span style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12px;color:var(--muted,#61757B)">{{ loopIterLabel }}</span>
+        <button type="button" onClick="{{ toggleLoop }}" style="display:inline-flex;align-items:center;gap:8px;height:38px;padding:0 16px;border-radius:999px;border:1px solid var(--line,#C9DFE2);background:var(--card,#FFFFFF);color:var(--ink,#153A43);cursor:pointer;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12.5px;font-weight:600" style-hover="border-color:var(--teal,#269E95)">
+          <sc-if value="{{ loopPlaying }}" hint-placeholder-val="{{ true }}"><span>❚❚ Pause</span></sc-if>
+          <sc-if value="{{ loopPaused }}" hint-placeholder-val="{{ false }}"><span>▶ Play</span></sc-if>
+        </button>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;padding:16px 22px 0">
+        <button type="button" onClick="{{ goBatch }}" style="position:relative;display:inline-flex;align-items:center;gap:9px;height:40px;padding:0 15px 0 8px;border-radius:999px;border:1px solid var(--line2,#E2EEF0);background:var(--card,#FFFFFF);color:var(--ink,#153A43);cursor:pointer;font-size:15.5px;font-weight:700">
+          <span style="{{ railBatch }}"></span>
+          <span style="position:relative;display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--amber,#E3A33B);color:#153A43;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12px;font-weight:600">1</span>
+          <span style="position:relative">Labeled prefixes</span>
+        </button>
+        <button type="button" onClick="{{ goDream }}" style="position:relative;display:inline-flex;align-items:center;gap:9px;height:40px;padding:0 15px 0 8px;border-radius:999px;border:1px solid var(--line2,#E2EEF0);background:var(--card,#FFFFFF);color:var(--ink,#153A43);cursor:pointer;font-size:15.5px;font-weight:700">
+          <span style="{{ railDream }}"></span>
+          <span style="position:relative;display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--dream,#8864CF);color:#FFFFFF;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12px;font-weight:600">2</span>
+          <span style="position:relative"><em>Dream</em></span>
+        </button>
+        <button type="button" onClick="{{ goDiscern }}" style="position:relative;display:inline-flex;align-items:center;gap:9px;height:40px;padding:0 15px 0 8px;border-radius:999px;border:1px solid var(--line2,#E2EEF0);background:var(--card,#FFFFFF);color:var(--ink,#153A43);cursor:pointer;font-size:15.5px;font-weight:700">
+          <span style="{{ railDiscern }}"></span>
+          <span style="position:relative;display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--teal-ink,#1C7A73);color:#FFFFFF;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12px;font-weight:600">3</span>
+          <span style="position:relative"><em>Discern</em></span>
+        </button>
+        <span aria-hidden="true" style="align-self:center;padding:0 4px;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12px;color:var(--muted,#61757B)">↻ per batch</span>
+        <button type="button" onClick="{{ goRuntime }}" style="position:relative;display:inline-flex;align-items:center;gap:9px;height:40px;padding:0 15px 0 8px;border-radius:999px;border:1px solid var(--line2,#E2EEF0);background:var(--card,#FFFFFF);color:var(--ink,#153A43);cursor:pointer;font-size:15.5px;font-weight:700">
+          <span style="{{ railRun }}"></span>
+          <span style="position:relative;display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--link,#1F77B8);color:#FFFFFF;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12px;font-weight:600">4</span>
+          <span style="position:relative">Runtime auditing</span>
+        </button>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,360px),1fr));gap:24px;padding:18px 22px 22px">
+        <div style="display:flex;gap:12px;align-items:stretch">
+          <div style="position:relative;flex:1;min-width:0;aspect-ratio:16/10;border-radius:14px;overflow:hidden;border:1px solid var(--line2,#E2EEF0);background:var(--panel,#F2F9FA)">
+            <div style="{{ regionStyle }}"></div>
+            <div style="{{ boundaryStyle }}"></div>
+            <span style="position:absolute;left:12px;bottom:10px;z-index:3;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--link,#1F77B8)">predict success</span>
+            <span style="position:absolute;right:12px;bottom:10px;z-index:3;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--alert-ink,#C2414F)">predict failure</span>
+            <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" style="position:absolute;inset:0;width:100%;height:100%;z-index:2;overflow:visible">
+              <polyline points="{{ runLine }}" style="fill:none;stroke:var(--ink,#153A43);stroke-width:1.5;stroke-dasharray:4 4;vector-effect:non-scaling-stroke;opacity:.6"></polyline>
+            </svg>
+            <sc-for list="{{ ghosts }}" as="g" hint-placeholder-count="0">
+              <div style="{{ g.pos }}"><div style="{{ g.shape }}"></div></div>
+            </sc-for>
+            <sc-for list="{{ pts }}" as="p" hint-placeholder-count="0">
+              <div style="{{ p.pos }}">
+                <div style="{{ p.halo }}"></div>
+                <sc-if value="{{ p.isS }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:-7px;top:-7px;width:14px;height:14px;border-radius:50%;background:var(--succ,#4A86CF);box-shadow:0 0 0 2px var(--card,#FFFFFF)"></div></sc-if>
+                <sc-if value="{{ p.isF }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:-8px;top:-9px;width:16px;height:15px;background:var(--fail,#E9737E);clip-path:polygon(50% 0,100% 100%,0 100%)"></div></sc-if>
+                <div style="{{ p.ring }}"></div>
+              </div>
+            </sc-for>
+            <sc-for list="{{ rpts }}" as="r" hint-placeholder-count="0">
+              <div style="{{ r.pos }}"><div style="{{ r.dot }}"></div><span style="position:absolute;left:9px;top:-22px;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:10.5px;color:var(--muted,#61757B);white-space:nowrap">{{ r.t }}</span></div>
+            </sc-for>
+            <div style="{{ alertStyle }}">Alert · predicted failure</div>
+            <span style="position:absolute;left:10px;top:10px;z-index:5;padding:4px 8px;border-radius:6px;background:var(--card,#FFFFFF);border:1px solid var(--line2,#E2EEF0);font-family:'JetBrains Mono',ui-monospace,monospace;font-size:10.5px;color:var(--ink,#153A43)">{{ vizTag }}</span>
+          </div>
+          <div style="flex:none;width:44px;display:flex;flex-direction:column;align-items:center;gap:8px">
+            <span style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted,#61757B)">Loss</span>
+            <div style="position:relative;flex:1;width:14px;border-radius:999px;background:var(--panel,#F2F9FA);border:1px solid var(--line2,#E2EEF0);overflow:hidden">
+              <div style="{{ meterStyle }}"></div>
+            </div>
+            <span style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:14px;font-weight:600;color:var(--ink,#153A43)">{{ meterArrow }}</span>
+          </div>
+        </div>
+        <div style="min-width:0">
+          <sc-if value="{{ isBatch }}" hint-placeholder-val="{{ true }}">
+            <div style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--amber-ink,#93630F)">Step 1 · Labeled prefixes</div>
+            <h4 style="margin:10px 0 8px;font-size:21px;line-height:1.3">A class-balanced batch of recorded prefixes</h4>
+            <p style="margin:0;font-size:16px;line-height:1.6;color:var(--muted,#61757B);text-align:justify;hyphens:auto;text-wrap:pretty" data-balance="1">We form a class-balanced batch from recorded success and failure prefixes, keeping their inputs and outcome labels unchanged throughout the training steps.</p>
+            <div style="margin:16px 0 0;padding:14px 16px;border-radius:12px;background:var(--panel,#F2F9FA);border:1px solid var(--line2,#E2EEF0);font-size:19px;line-height:1.75;overflow-x:auto;overflow-y:hidden;white-space:nowrap">ℬ = (<i>q</i><sub><i>b</i></sub>)<sub><i>b</i>=1</sub><sup>2<i>m</i></sup>, &#160;ℒ<sub>ℬ</sub>(Θ) = <sup>1</sup>⁄<sub><i>n</i></sub> Σ<sub><i>b</i></sub> ℓ<sub>BCE</sub>(<i>f</i><sub>Θ</sub>(<i>X</i><sub><i>q</i><sub><i>b</i></sub></sub>), <i>Y</i><sub><i>q</i><sub><i>b</i></sub></sub>)</div>
+            <p style="margin:12px 0 0;font-size:14.5px;line-height:1.55;color:var(--muted,#61757B)"><i>m</i> prefixes from each outcome class, <i>n</i> = 2<i>m</i>.</p>
+          </sc-if>
+          <sc-if value="{{ isDream }}" hint-placeholder-val="{{ false }}">
+            <div style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--dream-ink,#6F4CB8)">Step 2 · Dream</div>
+            <h4 style="margin:10px 0 8px;font-size:21px;line-height:1.3">Construct hard latent variants</h4>
+            <p style="margin:0;font-size:16px;line-height:1.6;color:var(--muted,#61757B);text-align:justify;hyphens:auto;text-wrap:pretty" data-balance="1">With the auditor fixed, we search for shared, bounded, low-rank perturbations to its query and value projection weights that increase batch prediction loss.</p>
+            <div style="display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:16px 0 0;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12.5px;font-weight:600">
+              <span style="position:relative;padding:7px 12px;border-radius:8px;border:1px solid var(--line2,#E2EEF0)"><span style="{{ subA }}"></span><span style="position:relative">Ascent</span></span>
+              <span aria-hidden="true" style="color:var(--muted,#61757B)">→</span>
+              <span style="position:relative;padding:7px 12px;border-radius:8px;border:1px solid var(--line2,#E2EEF0)"><span style="{{ subB }}"></span><span style="position:relative">Rank-r SVD</span></span>
+              <span aria-hidden="true" style="color:var(--muted,#61757B)">→</span>
+              <span style="position:relative;padding:7px 12px;border-radius:8px;border:1px solid var(--line2,#E2EEF0)"><span style="{{ subC }}"></span><span style="position:relative">Accept</span></span>
+            </div>
+            <sc-if value="{{ dreamSub0 }}" hint-placeholder-val="{{ false }}"><p style="margin:10px 0 0;font-size:14.5px;line-height:1.55;color:var(--muted,#61757B)">Take the batch-loss gradient at <i>V</i> = 0 for each adapted query and value projection, in scaled coordinates <i>C</i><sub><i>j</i></sub> = <i>ω</i><sub><i>j</i></sub><i>G</i><sub><i>j</i></sub>.</p></sc-if>
+            <sc-if value="{{ dreamSub1 }}" hint-placeholder-val="{{ false }}"><p style="margin:10px 0 0;font-size:14.5px;line-height:1.55;color:var(--muted,#61757B)">Normalize the scaled gradient and keep its leading <i>r</i> singular components per projection, giving a candidate within radius <i>γ</i>.</p></sc-if>
+            <sc-if value="{{ dreamSub2 }}" hint-placeholder-val="{{ false }}"><p style="margin:10px 0 0;font-size:14.5px;line-height:1.55;color:var(--muted,#61757B)">Halve the candidate until the measured batch loss strictly exceeds the loss at <i>V</i> = 0. At most six points are tested; if none is accepted, <i>V</i> = 0.</p></sc-if>
+            <div style="margin:14px 0 0;padding:14px 16px;border-radius:12px;background:var(--dream-tint,#F3EEFB);border:1px solid var(--line2,#E2EEF0);font-size:19px;line-height:1.75;overflow-x:auto;overflow-y:hidden;white-space:nowrap"><i>V</i><sup>⋆</sup><sub>ℬ</sub>(Θ) ∈ arg max<sub><i>V</i>∈𝒰<sub><i>γ</i>,<i>r</i></sub></sub> ℒ<sub>ℬ</sub>(Θ, <i>V</i>)</div>
+          </sc-if>
+          <sc-if value="{{ isDiscern }}" hint-placeholder-val="{{ false }}">
+            <div style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--teal-ink,#1C7A73)">Step 3 · Discern</div>
+            <h4 style="margin:10px 0 8px;font-size:21px;line-height:1.3">Learn from them with the original labels</h4>
+            <p style="margin:0;font-size:16px;line-height:1.6;color:var(--muted,#61757B);text-align:justify;hyphens:auto;text-wrap:pretty" data-balance="1">Holding the selected perturbation fixed, we update the LoRA adapters and prediction head to minimize the loss on the resulting hard latent variants.</p>
+            <div style="margin:16px 0 0;padding:14px 16px;border-radius:12px;background:var(--teal-tint,#E6F4F2);border:1px solid var(--line2,#E2EEF0);font-size:19px;line-height:1.75;overflow-x:auto;overflow-y:hidden;white-space:nowrap">min<sub>Θ</sub> ℒ<sub>ℬ</sub>(Θ, sg[<i>V̂</i><sub>ℬ</sub>]), &#160;Θ = (<i>a</i>, <i>ψ</i>)</div>
+            <p style="margin:12px 0 0;font-size:14.5px;line-height:1.55;color:var(--muted,#61757B)">sg stops gradients through the <em>Dream</em> search. Each new batch starts a fresh search from <i>V</i> = 0.</p>
+          </sc-if>
+          <sc-if value="{{ isRuntime }}" hint-placeholder-val="{{ false }}">
+            <div style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--link,#1F77B8)">Step 4 · Runtime auditing</div>
+            <h4 style="margin:10px 0 8px;font-size:21px;line-height:1.3">Score each prefix, perturbation discarded</h4>
+            <p style="margin:0;font-size:16px;line-height:1.6;color:var(--muted,#61757B);text-align:justify;hyphens:auto;text-wrap:pretty" data-balance="1">We discard the perturbation and apply a calibrated threshold to each prefix score to predict failure during execution.</p>
+            <div style="margin:16px 0 0;padding:14px 16px;border-radius:12px;background:var(--blue-tint,#E8F1FA);border:1px solid var(--line2,#E2EEF0);font-size:19px;line-height:1.75;overflow-x:auto;overflow-y:hidden;white-space:nowrap"><i>s</i><sub><i>i</i>,<i>t</i></sub> = <i>f</i><sub>Θ</sub>(<i>X</i><sub><i>i</i>,<i>t</i></sub>), &#160;<i>Ŷ</i><sub><i>i</i>,<i>t</i></sub> = 𝟙{<i>s</i><sub><i>i</i>,<i>t</i></sub> ≥ <i>ζ</i><sub><i>t</i></sub>}</div>
+            <p style="margin:12px 0 0;font-size:14.5px;line-height:1.55;color:var(--muted,#61757B)">One forward pass and one threshold comparison per interaction. Step-dependent thresholds are fitted offline on successful training trajectories.</p>
+          </sc-if>
+        </div>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px 20px;padding:14px 22px;border-top:1px solid var(--line2,#E2EEF0);font-size:14px;color:var(--muted,#61757B)">
+        <span style="display:inline-flex;align-items:center;gap:7px"><span style="width:11px;height:11px;border-radius:50%;background:var(--succ,#4A86CF)"></span>Success prefix</span>
+        <span style="display:inline-flex;align-items:center;gap:7px"><span style="width:12px;height:11px;background:var(--fail,#E9737E);clip-path:polygon(50% 0,100% 100%,0 100%)"></span>Failure prefix</span>
+        <span style="display:inline-flex;align-items:center;gap:7px"><span style="width:11px;height:11px;border-radius:50%;border:1.5px dashed var(--muted,#61757B);box-sizing:border-box"></span>Unperturbed position</span>
+        <span style="display:inline-flex;align-items:center;gap:7px"><span style="width:14px;height:14px;border-radius:50%;background:var(--dream,#8864CF);opacity:.35"></span>Hard latent variant</span>
+        <span style="display:inline-flex;align-items:center;gap:7px"><span style="width:13px;height:13px;border-radius:50%;box-shadow:inset 0 0 0 2px var(--alert,#E96D79)"></span>Misclassified by the fixed head</span>
+        <span style="margin-left:auto;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11.5px">Positions are illustrative, not data</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="results" data-screen-label="04 Results" style="padding:clamp(56px,8vw,104px) 0;background:var(--panel,#F2F9FA);border-top:1px solid var(--line2,#E2EEF0);border-bottom:1px solid var(--line2,#E2EEF0)">
+  <div style="max-width:1160px;margin:0 auto;padding:0 clamp(18px,4vw,40px)">
+    <div style="display:flex;align-items:center;gap:14px;margin:0 0 18px"><span style="flex:1;height:1px;background:var(--line,#C9DFE2)"></span>
+      <span style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--link,#1F77B8)">04 · Results</span>
+      <span style="flex:1;height:1px;background:var(--line,#C9DFE2)"></span>
+    </div>
+    <h2 style="margin:0 auto;max-width:920px;text-align:center;font-size:clamp(30px,4.2vw,46px);line-height:1.12;letter-spacing:-.015em;text-wrap:balance">Over 90% trajectory-level weighted accuracy on both benchmarks</h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:14px;margin:30px 0 0">
+      <div style="padding:18px 20px;border:1px solid var(--line2,#E2EEF0);border-radius:14px;background:var(--card,#FFFFFF)">
+        <div style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted,#61757B)">Benchmarks</div>
+        <p style="margin:8px 0 0;font-size:15.5px;line-height:1.55;text-align:justify;hyphens:auto;text-wrap:pretty" data-balance="1"><strong>AFTraj-2K</strong>: multi-agent executions in math, coding and tool use, tested in-domain. <strong>StepShield</strong>: safety-monitoring trajectories, tested on unseen incident templates.</p>
+      </div>
+      <div style="padding:18px 20px;border:1px solid var(--line2,#E2EEF0);border-radius:14px;background:var(--card,#FFFFFF)">
+        <div style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted,#61757B)">Metrics</div>
+        <p style="margin:8px 0 0;font-size:15.5px;line-height:1.55;text-align:justify;hyphens:auto;text-wrap:pretty" data-balance="1"><strong>AUROC</strong> and <strong>FPR95</strong> from each trajectory's maximum prefix score; <strong>wACC</strong>, trajectory-level weighted accuracy; <strong>TWA</strong>, time-weighted accuracy rewarding earlier detection.</p>
+      </div>
+      <div style="padding:18px 20px;border:1px solid var(--line2,#E2EEF0);border-radius:14px;background:var(--card,#FFFFFF)">
+        <div style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted,#61757B)">Backbones</div>
+        <p style="margin:8px 0 0;font-size:15.5px;line-height:1.55;text-align:justify;hyphens:auto;text-wrap:pretty" data-balance="1">Qwen3-4B, Qwen3-8B, Llama-3.2-3B-Instruct and Llama-3.1-8B-Instruct. Trained auditors on Qwen3 report the mean and standard deviation over three seeds.</p>
+      </div>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px 16px;margin:36px 0 14px">
+      <div role="group" aria-label="Benchmark" style="display:inline-flex;padding:4px;gap:2px;border-radius:999px;background:var(--card,#FFFFFF);border:1px solid var(--line,#C9DFE2)">
+        <button type="button" onClick="{{ setAF }}" style="position:relative;height:36px;padding:0 16px;border:0;border-radius:999px;background:transparent;color:var(--ink,#153A43);cursor:pointer;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12.5px;font-weight:600"><span style="{{ segAF }}"></span><span style="position:relative">AFTraj-2K</span></button>
+        <button type="button" onClick="{{ setSS }}" style="position:relative;height:36px;padding:0 16px;border:0;border-radius:999px;background:transparent;color:var(--ink,#153A43);cursor:pointer;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12.5px;font-weight:600"><span style="{{ segSS }}"></span><span style="position:relative">StepShield</span></button>
+      </div>
+      <div role="group" aria-label="Rows" style="display:inline-flex;padding:4px;gap:2px;border-radius:999px;background:var(--card,#FFFFFF);border:1px solid var(--line,#C9DFE2)">
+        <button type="button" onClick="{{ setAll }}" style="position:relative;height:36px;padding:0 16px;border:0;border-radius:999px;background:transparent;color:var(--ink,#153A43);cursor:pointer;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12.5px;font-weight:600"><span style="{{ segAll }}"></span><span style="position:relative">All methods</span></button>
+        <button type="button" onClick="{{ setAud }}" style="position:relative;height:36px;padding:0 16px;border:0;border-radius:999px;background:transparent;color:var(--ink,#153A43);cursor:pointer;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12.5px;font-weight:600"><span style="{{ segAud }}"></span><span style="position:relative">Failure auditors</span></button>
+      </div>
+      <span style="margin-left:auto;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11.5px;color:var(--muted,#61757B)"><strong style="color:var(--ink,#153A43)">bold</strong> best · <span style="text-decoration:underline;text-underline-offset:3px">underline</span> second</span>
+    </div>
+    <div style="overflow-x:auto;border:1px solid var(--line,#C9DFE2);border-radius:16px;background:var(--card,#FFFFFF)">
+      <div style="min-width:660px">
+        <div style="display:grid;grid-template-columns:minmax(200px,1.8fr) repeat(4,minmax(90px,1fr));align-items:end;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12px;font-weight:600;letter-spacing:.03em;color:var(--muted,#61757B)">
+          <div style="padding:14px">Method · {{ benchName }}</div>
+          <div style="padding:14px 6px;text-align:center">AUROC ↑</div>
+          <div style="padding:14px 6px;text-align:center">FPR95 ↓</div>
+          <div style="padding:14px 6px;text-align:center">wACC ↑</div>
+          <div style="padding:14px 6px;text-align:center">TWA ↑</div>
+        </div>
+        <sc-for list="{{ mainGroups }}" as="g" hint-placeholder-count="2">
+          <div>
+            <div style="padding:9px 14px;border-top:1px solid var(--line,#C9DFE2);background:var(--panel,#F2F9FA);font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted,#61757B)">{{ g.name }}</div>
+            <sc-for list="{{ g.rows }}" as="r" hint-placeholder-count="4">
+              <div style="{{ r.rowStyle }}">
+                <div style="{{ r.mStyle }}">{{ r.method }}</div>
+                <sc-for list="{{ r.cells }}" as="c" hint-placeholder-count="4">
+                  <div style="padding:10px 6px;text-align:center;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:13.5px;font-variant-numeric:tabular-nums;white-space:nowrap"><span style="{{ c.emph }}">{{ c.v }}</span><span style="margin-left:3px;font-size:10.5px;color:var(--muted,#61757B)">{{ c.s }}</span></div>
+                </sc-for>
+              </div>
+            </sc-for>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+    <p style="margin:12px 2px 0;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11.5px;line-height:1.6;color:var(--muted,#61757B)">Table 1. Shaded rows: SAFE, Hide-and-Seek (H&amp;S) and TRACES on the same Qwen3 backbones. ± is the standard deviation over three training seeds.</p>
+    <sc-if value="{{ benchAF }}" hint-placeholder-val="{{ true }}">
+      <p style="margin:22px auto 0;max-width:920px;font-size:clamp(17px,1.3vw,18.5px);line-height:1.7;text-align:justify;hyphens:auto;text-wrap:pretty" data-balance="1">On in-domain AFTraj-2K, <em>Dream2Discern</em> leads all four metrics. For both Qwen3 backbones it outperforms SAFE, Hide-and-Seek and TRACES on all four metrics, averaged over three seeds.</p>
+    </sc-if>
+    <sc-if value="{{ benchSS }}" hint-placeholder-val="{{ false }}">
+      <p style="margin:22px auto 0;max-width:920px;font-size:clamp(17px,1.3vw,18.5px);line-height:1.7;text-align:justify;hyphens:auto;text-wrap:pretty" data-balance="1">On out-of-domain StepShield, <em>Dream2Discern</em> leads wACC and TWA. LLM judges are more competitive here, yet the 4B auditor exceeds Claude-Sonnet-4.6 in wACC and TWA, and its wACC advantage over failure auditors is substantially larger than on AFTraj-2K.</p>
+    </sc-if>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,460px),1fr));gap:32px 18px;margin:44px 0 0">
+      <div style="min-width:0;display:grid;grid-row:span 4;grid-template-rows:subgrid;row-gap:0;">
+        <h3 style="margin:0;font-size:22px;line-height:1.25">Generalization across model families</h3>
+        <p style="margin:8px 0 14px;font-size:16px;line-height:1.6;color:var(--muted,#61757B);text-align:justify;hyphens:auto;text-wrap:pretty" data-balance="1"><em>Dream2Discern</em> has the highest wACC in all four Llama settings.</p>
+        <div style="overflow-x:auto;border:1px solid var(--line,#C9DFE2);border-radius:14px;background:var(--card,#FFFFFF)">
+          <div style="min-width:520px">
+            <div style="display:grid;grid-template-columns:minmax(118px,1.1fr) minmax(132px,1.3fr) repeat(3,minmax(84px,1fr));align-items:end;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11.5px;font-weight:600;color:var(--muted,#61757B)">
+              <div style="padding:12px">Base model</div><div style="padding:12px">Method</div><div style="padding:12px 6px;text-align:center">AUROC ↑</div><div style="padding:12px 6px;text-align:center">wACC ↑</div><div style="padding:12px 6px;text-align:center">TWA ↑</div>
+            </div>
+            <sc-for list="{{ llamaRows }}" as="r" hint-placeholder-count="8">
+              <div style="{{ r.rowStyle }}">
+                <div style="padding:10px 12px;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12px;color:var(--muted,#61757B)">{{ r.model }}</div>
+                <div style="{{ r.mStyle }}">{{ r.method }}</div>
+                <sc-for list="{{ r.cells }}" as="c" hint-placeholder-count="3">
+                  <div style="padding:10px 6px;text-align:center;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:13px;font-variant-numeric:tabular-nums;white-space:nowrap"><span style="{{ c.emph }}">{{ c.v }}</span><span style="margin-left:3px;font-size:10px;color:var(--muted,#61757B)">{{ c.s }}</span></div>
+                </sc-for>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+        <p style="margin:10px 2px 0;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11.5px;color:var(--muted,#61757B)">Table 2 · {{ benchName }}</p>
+      </div>
+      <div style="min-width:0;display:grid;grid-row:span 4;grid-template-rows:subgrid;row-gap:0;">
+        <h3 style="margin:0;font-size:22px;line-height:1.25">Ablation on the perturbation strategy</h3>
+        <p style="margin:8px 0 14px;font-size:16px;line-height:1.6;color:var(--muted,#61757B);text-align:justify;hyphens:auto;text-wrap:pretty" data-balance="1"><em>Dream</em> perturbations yield the highest AUROC in all four settings.</p>
+        <div style="overflow-x:auto;border:1px solid var(--line,#C9DFE2);border-radius:14px;background:var(--card,#FFFFFF)">
+          <div style="min-width:520px">
+            <div style="display:grid;grid-template-columns:minmax(118px,1.1fr) minmax(132px,1.3fr) repeat(3,minmax(84px,1fr));align-items:end;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11.5px;font-weight:600;color:var(--muted,#61757B)">
+              <div style="padding:12px">Base model</div><div style="padding:12px">Strategy</div><div style="padding:12px 6px;text-align:center">AUROC ↑</div><div style="padding:12px 6px;text-align:center">wACC ↑</div><div style="padding:12px 6px;text-align:center">TWA ↑</div>
+            </div>
+            <sc-for list="{{ ablRows }}" as="r" hint-placeholder-count="6">
+              <div style="{{ r.rowStyle }}">
+                <div style="padding:10px 12px;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12px;color:var(--muted,#61757B)">{{ r.model }}</div>
+                <div style="{{ r.mStyle }}">{{ r.method }}</div>
+                <sc-for list="{{ r.cells }}" as="c" hint-placeholder-count="3">
+                  <div style="padding:10px 6px;text-align:center;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:13px;font-variant-numeric:tabular-nums;white-space:nowrap"><span style="{{ c.emph }}">{{ c.v }}</span></div>
+                </sc-for>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+        <p style="margin:10px 2px 0;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11.5px;color:var(--muted,#61757B)">Table 3 · {{ benchName }}</p>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,380px),1fr));gap:clamp(18px,3vw,40px);align-items:center;margin:56px 0 0">
+      <div>
+        <h3 style="margin:0;font-size:22px;line-height:1.25">Detection accuracy–timeliness trade-off</h3>
+        <p style="margin:10px 0 0;font-size:16.5px;line-height:1.62;color:var(--muted,#61757B);text-align:justify;hyphens:auto;text-wrap:pretty" data-balance="1">With Qwen3-8B, we vary the nominal false-alarm level <i>α</i> from 0.01 to 1.00 and plot wACC against mean normalized detection time over failed trajectories, counting undetected failures as one.</p>
+        <sc-if value="{{ benchAF }}" hint-placeholder-val="{{ true }}"><p style="margin:12px 0 0;font-size:16.5px;line-height:1.62;text-wrap:pretty">On AFTraj-2K, <em>Dream2Discern</em> achieves higher wACC when early detection is prioritized.</p></sc-if>
+        <sc-if value="{{ benchSS }}" hint-placeholder-val="{{ false }}"><p style="margin:12px 0 0;font-size:16.5px;line-height:1.62;text-wrap:pretty">On StepShield, the gains extend across a broad range of operating points.</p></sc-if>
+      </div>
+      <sc-if value="{{ benchAF }}" hint-placeholder-val="{{ true }}">
+        <figure style="margin:0">
+          <button type="button" onClick="{{ openFig }}" aria-label="Enlarge Figure 4a" style="display:block;width:100%;padding:12px;border:1px solid var(--line2,#E2EEF0);border-radius:14px;background:var(--figbg,#FFFFFF);cursor:zoom-in"><img src="figures/tradeoff_aftraj.png" alt="wACC against average detection time on AFTraj-2K for Ours, TRACES, H&amp;S and SAFE." loading="lazy" style="display:block;width:100%;height:auto"></button>
+          <figcaption style="margin:10px 2px 0;font-size:14.5px;line-height:1.5;color:var(--muted,#61757B)"><strong style="color:var(--ink,#153A43)">Figure 4a.</strong> Detection accuracy–timeliness trade-off on AFTraj-2K for Qwen3-8B. Markers denote <i>α</i> = 0.05.</figcaption>
+        </figure>
+      </sc-if>
+      <sc-if value="{{ benchSS }}" hint-placeholder-val="{{ false }}">
+        <figure style="margin:0">
+          <button type="button" onClick="{{ openFig }}" aria-label="Enlarge Figure 4b" style="display:block;width:100%;padding:12px;border:1px solid var(--line2,#E2EEF0);border-radius:14px;background:var(--figbg,#FFFFFF);cursor:zoom-in"><img src="figures/tradeoff_stepshield.png" alt="wACC against average detection time on StepShield for Ours, TRACES, H&amp;S and SAFE." loading="lazy" style="display:block;width:100%;height:auto"></button>
+          <figcaption style="margin:10px 2px 0;font-size:14.5px;line-height:1.5;color:var(--muted,#61757B)"><strong style="color:var(--ink,#153A43)">Figure 4b.</strong> Detection accuracy–timeliness trade-off on StepShield for Qwen3-8B. Markers denote <i>α</i> = 0.05.</figcaption>
+        </figure>
+      </sc-if>
+    </div>
+  </div>
+</section>
+
+<section id="analysis" data-screen-label="05 Analysis" style="padding:clamp(56px,8vw,104px) 0">
+  <div style="max-width:1160px;margin:0 auto;padding:0 clamp(18px,4vw,40px)">
+    <div style="display:flex;align-items:center;gap:14px;margin:0 0 18px"><span style="flex:1;height:1px;background:var(--line2,#E2EEF0)"></span>
+      <span style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--dream-ink,#6F4CB8)">05 · Mechanism analysis</span>
+      <span style="flex:1;height:1px;background:var(--line2,#E2EEF0)"></span>
+    </div>
+    <h2 style="margin:0 auto;max-width:920px;text-align:center;font-size:clamp(30px,4.2vw,46px);line-height:1.12;letter-spacing:-.015em;text-wrap:balance">Loss-guided perturbations reflect weaknesses in outcome discrimination</h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,400px),1fr));gap:18px;margin:32px 0 0">
+      <div style="display:grid;grid-row:span 4;grid-template-rows:subgrid;row-gap:0;padding:clamp(20px,2.4vw,28px);border:1px solid var(--line2,#E2EEF0);border-radius:18px;background:var(--card,#FFFFFF)">
+        <div style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--dream-ink,#6F4CB8)">Variant construction</div>
+        <h3 style="margin:10px 0 8px;font-size:22px;line-height:1.25">Loss-guided search finds harder variants than random sampling</h3>
+        <p style="margin:0;font-size:16px;line-height:1.6;color:var(--muted,#61757B);text-align:justify;hyphens:auto;text-wrap:pretty" data-balance="1">We fix a Qwen3-8B auditor trained with <em>Dream2Discern</em> and apply loss-guided <em>Dream</em> or random perturbations of equal rank and radius to 50 training batches. <em>Dream</em> raises batch BCE on every batch, whereas random changes cluster near zero.</p>
+        <figure style="margin:18px 0 0">
+          <button type="button" onClick="{{ openFig }}" aria-label="Enlarge Figure 5a" style="display:block;width:100%;padding:10px;border:1px solid var(--line2,#E2EEF0);border-radius:12px;background:var(--figbg,#FFFFFF);cursor:zoom-in"><img src="figures/loss_guided_vs_random.png" alt="Per-batch prediction loss increase for random and Dream perturbations." loading="lazy" style="display:block;width:100%;height:auto"></button>
+          <figcaption style="margin:10px 2px 0;font-size:14.5px;line-height:1.5;color:var(--muted,#61757B)"><strong style="color:var(--ink,#153A43)">Figure 5a.</strong> Per-batch loss increase (<i>n</i> = 50), with median and IQR.</figcaption>
+        </figure>
+      </div>
+      <div style="display:grid;grid-row:span 4;grid-template-rows:subgrid;row-gap:0;padding:clamp(20px,2.4vw,28px);border:1px solid var(--line2,#E2EEF0);border-radius:18px;background:var(--card,#FFFFFF)">
+        <div style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--dream-ink,#6F4CB8)">Dream sensitivity</div>
+        <h3 style="margin:10px 0 8px;font-size:22px;line-height:1.25">Higher <em>Dream</em> sensitivity coincides with higher held-out error</h3>
+        <p style="margin:0;font-size:16px;line-height:1.6;color:var(--muted,#61757B);text-align:justify;hyphens:auto;text-wrap:pretty" data-balance="1">Using a Qwen3-4B auditor trained without perturbations, we average each held-out prefix's absolute score change under eight <em>Dream</em> perturbations from training batches. Error rates rise from the least to the most sensitive fifth of prefixes.</p>
+        <figure style="margin:18px 0 0">
+          <button type="button" onClick="{{ openFig }}" aria-label="Enlarge Figure 5b" style="display:block;width:100%;padding:10px;border:1px solid var(--line2,#E2EEF0);border-radius:12px;background:var(--figbg,#FFFFFF);cursor:zoom-in"><img src="figures/dream_sensitivity.png" alt="Held-out error rate across five Dream sensitivity groups." loading="lazy" style="display:block;width:100%;height:auto"></button>
+          <figcaption style="margin:10px 2px 0;font-size:14.5px;line-height:1.5;color:var(--muted,#61757B)"><strong style="color:var(--ink,#153A43)">Figure 5b.</strong> <em>Dream</em> sensitivity and held-out error.</figcaption>
+        </figure>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="case" data-screen-label="06 Case study" style="padding:clamp(56px,8vw,104px) 0;background:var(--panel,#F2F9FA);border-top:1px solid var(--line2,#E2EEF0);border-bottom:1px solid var(--line2,#E2EEF0)">
+  <div style="max-width:1160px;margin:0 auto;padding:0 clamp(18px,4vw,40px)">
+    <div style="display:flex;align-items:center;gap:14px;margin:0 0 18px"><span style="flex:1;height:1px;background:var(--line,#C9DFE2)"></span>
+      <span style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--alert-ink,#C2414F)">06 · Case study</span>
+      <span style="flex:1;height:1px;background:var(--line,#C9DFE2)"></span>
+    </div>
+    <h2 style="margin:0 auto;max-width:920px;text-align:center;font-size:clamp(30px,4.2vw,46px);line-height:1.12;letter-spacing:-.015em;text-wrap:balance">Failure predicted at the error step, two interactions before the test fails</h2>
+    <div ref="{{ caseRef }}" style="margin:32px 0 0;border:1px solid var(--line,#C9DFE2);border-radius:20px;background:var(--card,#FFFFFF);overflow:hidden">
+      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px 20px;padding:18px 22px;border-bottom:1px solid var(--line2,#E2EEF0)">
+        <div style="display:flex;flex-direction:column;gap:5px;margin-right:auto">
+          <span style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--alert-ink,#C2414F)">Replay · runs automatically</span>
+          <span style="font-size:21px;font-weight:700;line-height:1.25">Observed prefix · {{ caseRange }}</span>
+        </div>
+        <div aria-hidden="true" style="display:flex;align-items:center;gap:4px">
+          <sc-for list="{{ caseSegs }}" as="g" hint-placeholder-count="9"><span style="{{ g.st }}"></span></sc-for>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,380px),1fr));gap:24px;padding:20px 22px">
+        <div style="display:flex;flex-direction:column;gap:10px;min-width:0;padding:16px;border-radius:14px;background:var(--panel,#F2F9FA);border:1px solid var(--line2,#E2EEF0)">
+          <div style="padding:2px 4px 12px;border-bottom:1px solid var(--line,#C9DFE2)">
+            <div style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;font-size:11px;color:var(--muted,#61757B)">Task</div>
+            <p style="margin:6px 0 0;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:14px;line-height:1.5;font-weight:600">Write a function to find the median of three numbers.</p>
+          </div>
+          <div style="{{ row1 }}">
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12px;font-weight:600">Step 1</span><span style="padding:3px 9px;border-radius:999px;background:var(--amber-tint,#FBF3E4);color:var(--amber-ink,#93630F);font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12px;font-weight:600">CodeWriter</span></div>
+            <div style="margin:10px 0 0;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:13px;line-height:1.6;white-space:pre-wrap"><div>def median_numbers(a, b, c):</div><div style="padding-left:2ch">return sorted([a, b, c])[1]</div></div>
+          </div>
+          <div style="{{ row26 }}"><span style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12px;font-weight:600">⋮ Steps 2–6</span><span style="margin-left:10px;font-size:14.5px;color:var(--muted,#61757B)">Intermediate interactions, not shown</span></div>
+          <div style="{{ row7 }}">
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12px;font-weight:600">Step 7</span><span style="padding:3px 9px;border-radius:999px;background:var(--blue-tint,#E8F1FA);color:var(--link,#1F77B8);font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12px;font-weight:600">CodeTester</span><span style="padding:3px 9px;border-radius:999px;box-shadow:inset 0 0 0 1px var(--alert,#E96D79);color:var(--alert-ink,#C2414F);font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11px;font-weight:600;letter-spacing:.04em">GT error step</span></div>
+            <div style="margin:10px 0 0;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:13px;line-height:1.6;white-space:pre-wrap"><div>"Solution code":</div><div style="padding-left:2ch;color:var(--alert-ink,#C2414F);font-weight:600">return max([a, b, c])</div><div>"Test code":</div><div style="padding-left:2ch">assert median_numbers(25,55,65)==55.0</div></div>
+          </div>
+          <div style="{{ row8 }}"><span style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12px;font-weight:600">⋮ Step 8</span><span style="margin-left:10px;font-size:14.5px;color:var(--muted,#61757B)">Intermediate interaction</span></div>
+          <div style="{{ row9 }}">
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12px;font-weight:600">Step 9</span><span style="padding:3px 9px;border-radius:999px;background:var(--card,#FFFFFF);color:var(--muted,#61757B);font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12px;font-weight:600">Environment</span></div>
+            <div style="margin:10px 0 0;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:14px;font-weight:600;color:var(--alert-ink,#C2414F)">Test_FAILED</div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
+          <div>
+            <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:0 0 8px;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11.5px;color:var(--muted,#61757B)"><span style="color:var(--dream-ink,#6F4CB8);font-weight:600">Dream sensitivity · auditor w/o perturbation</span><span>approx. values</span></div>
+            <div style="display:grid;grid-template-columns:30px minmax(0,1fr);gap:6px">
+              <div style="position:relative;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:10.5px;color:var(--muted,#61757B)"><span style="position:absolute;right:0;top:0;transform:translateY(-50%)">0.5</span><span style="position:absolute;right:0;bottom:0;transform:translateY(50%)">0</span></div>
+              <div style="position:relative;height:110px;border-left:1px solid var(--line,#C9DFE2);border-bottom:1px solid var(--line,#C9DFE2)">
+                <div style="position:absolute;left:73%;top:0;bottom:0;border-left:1.5px dashed var(--alert,#E96D79);opacity:.7"></div>
+                <div style="{{ cursorStyle }}"></div>
+                <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" style="position:absolute;inset:0;width:100%;height:100%;overflow:visible"><polyline points="{{ sensLine }}" style="fill:none;stroke:var(--dream,#8864CF);stroke-width:2;vector-effect:non-scaling-stroke"></polyline></svg>
+                <sc-for list="{{ sensMarks }}" as="m" hint-placeholder-count="0"><div style="{{ m.pos }}"><div style="position:absolute;left:-4px;top:-4px;width:8px;height:8px;border-radius:50%;background:var(--dream,#8864CF)"></div></div></sc-for>
+              </div>
+            </div>
+          </div>
+          <div style="flex:1;display:flex;flex-direction:column;min-height:0">
+            <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:0 0 26px;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11.5px;color:var(--muted,#61757B)"><span style="font-weight:600;color:var(--ink,#153A43)">Normalized failure score</span><span style="display:inline-flex;gap:14px;flex-wrap:wrap"><span style="display:inline-flex;align-items:center;gap:6px"><span style="width:16px;height:2px;background:var(--green,#2F7466)"></span>Dream2Discern</span><span style="display:inline-flex;align-items:center;gap:6px"><span style="width:16px;height:0;border-top:2px dashed var(--succ,#4A86CF)"></span>w/o Perturbation</span></span></div>
+            <div style="flex:1;display:grid;grid-template-columns:30px minmax(0,1fr);grid-template-rows:minmax(200px,1fr) 18px;column-gap:6px">
+              <div style="position:relative;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:10.5px;color:var(--muted,#61757B)"><span style="position:absolute;right:0;top:4.76%;transform:translateY(-50%)">4</span><span style="position:absolute;right:0;top:28.57%;transform:translateY(-50%)">3</span><span style="position:absolute;right:0;top:52.38%;transform:translateY(-50%)">2</span><span style="position:absolute;right:0;top:76.19%;transform:translateY(-50%)">1</span><span style="position:absolute;right:0;top:100%;transform:translateY(-50%)">0</span></div>
+              <div style="position:relative;border-left:1px solid var(--line,#C9DFE2);border-bottom:1px solid var(--line,#C9DFE2)">
+                <div style="position:absolute;left:0;right:0;top:4.76%;border-top:1px solid var(--line2,#E2EEF0)"></div><div style="position:absolute;left:0;right:0;top:28.57%;border-top:1px solid var(--line2,#E2EEF0)"></div><div style="position:absolute;left:0;right:0;top:52.38%;border-top:1px solid var(--line2,#E2EEF0)"></div><div style="position:absolute;left:0;right:0;top:76.19%;border-top:1.5px dotted var(--muted,#61757B)"></div>
+                <span style="position:absolute;left:6px;top:76.19%;transform:translateY(-130%);font-family:'JetBrains Mono',ui-monospace,monospace;font-size:10.5px;color:var(--muted,#61757B)">Decision boundary</span>
+                <div style="position:absolute;left:73%;top:0;bottom:0;border-left:1.5px dashed var(--alert,#E96D79);opacity:.7"></div>
+                <span style="position:absolute;left:73%;top:0;transform:translate(-50%,-120%);font-family:'JetBrains Mono',ui-monospace,monospace;font-size:10.5px;font-weight:600;color:var(--alert-ink,#C2414F);white-space:nowrap">GT error step</span>
+                <div style="{{ cursorStyle }}"></div>
+                <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" style="position:absolute;inset:0;width:100%;height:100%;overflow:visible">
+                  <polyline points="{{ baseLine }}" style="fill:none;stroke:var(--succ,#4A86CF);stroke-width:2;stroke-dasharray:6 4;vector-effect:non-scaling-stroke"></polyline>
+                  <polyline points="{{ d2dLine }}" style="fill:none;stroke:var(--green,#2F7466);stroke-width:2.5;vector-effect:non-scaling-stroke"></polyline>
+                </svg>
+                <sc-for list="{{ baseMarks }}" as="m" hint-placeholder-count="0"><div style="{{ m.pos }}"><div style="position:absolute;left:-4px;top:-4px;width:8px;height:8px;background:var(--succ,#4A86CF)"></div></div></sc-for>
+                <sc-for list="{{ d2dMarks }}" as="m" hint-placeholder-count="0"><div style="{{ m.pos }}"><div style="position:absolute;left:-5px;top:-5px;width:10px;height:10px;border-radius:50%;background:var(--green,#2F7466)"></div></div></sc-for>
+                <sc-if value="{{ d2dAlert }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:73%;top:12.38%;width:22px;height:22px;transform:translate(-50%,-50%);border-radius:50%;box-shadow:inset 0 0 0 2px var(--alert,#E96D79);z-index:3"></div></sc-if>
+                <sc-if value="{{ baseAlert }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:96%;top:76.18%;width:22px;height:22px;transform:translate(-50%,-50%);border-radius:50%;box-shadow:inset 0 0 0 2px var(--alert,#E96D79);z-index:3"></div></sc-if>
+                <sc-for list="{{ valLabels }}" as="v" hint-placeholder-count="0"><span style="{{ v.st }}">{{ v.txt }}</span></sc-for>
+              </div>
+              <div></div>
+              <div style="position:relative;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:10.5px;color:var(--muted,#61757B)"><span style="position:absolute;left:4.0%;top:4px;transform:translateX(-50%)">1</span><span style="position:absolute;left:15.5%;top:4px;transform:translateX(-50%)">2</span><span style="position:absolute;left:27.0%;top:4px;transform:translateX(-50%)">3</span><span style="position:absolute;left:38.5%;top:4px;transform:translateX(-50%)">4</span><span style="position:absolute;left:50.0%;top:4px;transform:translateX(-50%)">5</span><span style="position:absolute;left:61.5%;top:4px;transform:translateX(-50%)">6</span><span style="position:absolute;left:73.0%;top:4px;transform:translateX(-50%)">7</span><span style="position:absolute;left:84.5%;top:4px;transform:translateX(-50%)">8</span><span style="position:absolute;left:96.0%;top:4px;transform:translateX(-50%)">9</span></div>
+            </div>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px">
+            <span style="{{ d2dChip }}"><span style="font-weight:600;color:var(--green,#2F7466)">Dream2Discern</span><span>{{ d2dScore }}</span><span>{{ d2dVerdict }}</span></span>
+            <span style="{{ baseChip }}"><span style="font-weight:600;color:var(--link,#1F77B8)">w/o Perturbation</span><span>{{ baseScore }}</span><span>{{ baseVerdict }}</span></span>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px 14px;align-items:baseline;padding:14px 22px 16px;border-top:1px solid var(--line2,#E2EEF0);background:var(--panel,#F2F9FA)">
+        <span style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12px;font-weight:600;color:var(--alert-ink,#C2414F)">{{ caseLabel }}</span>
+        <p style="flex:1;min-width:min(100%,260px);margin:0;font-size:15.5px;line-height:1.6;text-wrap:pretty">{{ caseNote }}</p>
+      </div>
+    </div>
+    <p style="margin:12px 2px 0;font-size:14.5px;line-height:1.55;color:var(--muted,#61757B);text-align:justify;hyphens:auto;text-wrap:pretty" data-balance="1"><strong style="color:var(--ink,#153A43)">Figure 6.</strong> Case study of runtime failure prediction on a held-out coding trajectory from AFTraj-2K. <em>Dream</em> sensitivity values are approximate.</p>
+  </div>
+</section>
+
+<section id="bibtex" data-screen-label="BibTeX" style="padding:clamp(56px,8vw,104px) 0">
+  <div style="max-width:900px;margin:0 auto;padding:0 clamp(18px,4vw,40px)">
+    <div style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--teal-ink,#1C7A73);text-align:center">Cite this work</div>
+    <h2 style="margin:12px 0 0;text-align:center;font-size:clamp(30px,4vw,44px);line-height:1.1;letter-spacing:-.015em">BibTeX</h2>
+    <div style="position:relative;margin:24px 0 0;border-radius:16px;background:var(--panel,#F2F9FA);border:1px solid var(--line2,#E2EEF0)">
+      <button type="button" onClick="{{ copyBib }}" style="position:absolute;top:12px;right:12px;z-index:1;display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 14px;border-radius:999px;border:1px solid var(--line,#C9DFE2);background:var(--card,#FFFFFF);color:var(--ink,#153A43);cursor:pointer;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12px;font-weight:600" style-hover="border-color:var(--teal,#269E95)">
+        <sc-if value="{{ notCopied }}" hint-placeholder-val="{{ true }}"><span>Copy</span></sc-if>
+        <sc-if value="{{ copied }}" hint-placeholder-val="{{ false }}"><span style="color:var(--teal-ink,#1C7A73)">Copied ✓</span></sc-if>
+      </button>
+      <div ref="{{ bibRef }}" style="padding:24px 24px 22px;overflow-x:auto;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:13.5px;line-height:1.75;color:var(--ink,#153A43)">
+        <div style="white-space:pre">@article{zhang2026dream2discern,</div>
+        <div style="white-space:pre">&#160;&#160;title   = {Dream2Discern: Learning from Hard Latent Variants for Runtime Failure Prediction in Multi-Agent Systems},</div>
+        <div style="white-space:pre">&#160;&#160;author  = {Zhang, Boxuan and Zhu, Jianing and Han, Xiaotian and Tang, Ruixiang},</div>
+        <div style="white-space:pre">&#160;&#160;note    = {Preprint; arXiv identifier pending},</div>
+        <div style="white-space:pre">&#160;&#160;year    = {2026}</div>
+        <div style="white-space:pre">}</div>
+      </div>
+    </div>
+    <p style="margin:12px 2px 0;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11.5px;color:var(--muted,#61757B)">The arXiv identifier will be filled in once the preprint is posted.</p>
+  </div>
+</section>
+
+<section data-screen-label="Closing" style="padding:clamp(64px,9vw,112px) 0;background:var(--band,#153A43);color:#E8F2F3">
+  <div style="max-width:980px;margin:0 auto;padding:0 clamp(18px,4vw,40px);text-align:center">
+    <div style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#7FD3CB">The paper in one sentence</div>
+    <p style="margin:18px 0 0;font-size:clamp(24px,3.2vw,38px);line-height:1.3;font-weight:700;text-wrap:balance">The variants are regenerated as the auditor learns, turning a limited corpus into a renewable source of hard examples and requiring no additional trajectory collection or outcome verification.</p>
+    <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin:32px 0 0">
+      <sc-if value="{{ showPdf }}" hint-placeholder-val="{{ true }}"><a href="paper/dream2discern.pdf" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:8px;height:44px;padding:0 20px;border-radius:999px;background:#E8F2F3;color:#153A43;text-decoration:none;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:13px;font-weight:600" style-hover="background:#FFFFFF;color:#153A43">Read the paper <span aria-hidden="true">↓</span></a></sc-if>
+      <a href="#top" style="display:inline-flex;align-items:center;height:44px;padding:0 20px;border-radius:999px;border:1px solid rgba(232,242,243,.35);color:#E8F2F3;text-decoration:none;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:13px;font-weight:600" style-hover="border-color:#7FD3CB;color:#FFFFFF">Back to top ↑</a>
+    </div>
+  </div>
+</section>
+
+<footer style="padding:30px 0 40px;border-top:1px solid var(--line2,#E2EEF0)">
+  <div style="max-width:1160px;margin:0 auto;padding:0 clamp(18px,4vw,40px);display:flex;flex-wrap:wrap;align-items:center;gap:12px 24px;font-size:14.5px;color:var(--muted,#61757B)">
+    <span style="display:inline-flex;align-items:center;gap:10px"><img src="assets/brand/robot.png" alt="" style="display:block;width:26px;height:auto"><span><strong style="color:var(--ink,#153A43)">Dream<span style="color:var(--dream,#8864CF)">2</span>Discern</strong> · Rutgers University · The University of Texas at Austin · Amazon</span></span>
+    <span style="margin-left:auto;display:inline-flex;flex-wrap:wrap;gap:16px;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12px">
+      <a href="mailto:boxuan.zhang@rutgers.edu,ruixiang.tang@rutgers.edu" style="color:var(--muted,#61757B)">Contact</a>
+      <a href="#bibtex" style="color:var(--muted,#61757B)">Cite</a>
+      <a href="#top" style="color:var(--muted,#61757B)">Top ↑</a>
+    </span>
+  </div>
+</footer>
+
+<sc-if value="{{ lbOpen }}" hint-placeholder-val="{{ false }}">
+  <div role="dialog" aria-modal="true" aria-label="Enlarged figure" onClick="{{ closeFig }}" style="position:fixed;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:clamp(16px,4vw,48px);background:rgba(8,18,22,.84);backdrop-filter:blur(4px);cursor:zoom-out">
+    <img ref="{{ lbImgRef }}" alt="{{ lbAlt }}" style="display:block;max-width:min(1500px,100%);max-height:78vh;width:auto;height:auto;padding:clamp(8px,1.5vw,18px);border-radius:12px;background:#FFFFFF;box-shadow:0 30px 80px -20px rgba(0,0,0,.6)">
+    <p style="margin:0;max-width:920px;font-size:15px;line-height:1.55;text-align:center;color:#E3EEF0">{{ lbCaption }}</p>
+    <button type="button" onClick="{{ closeFig }}" style="position:absolute;top:16px;right:16px;height:38px;padding:0 14px;border-radius:999px;border:1px solid rgba(227,238,240,.4);background:transparent;color:#E3EEF0;cursor:pointer;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12.5px">Close ✕</button>
+  </div>
+</sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;videoSrc&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;assets/video/dream2discern.mp4&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Media&quot;},&quot;arxivUrl&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Links&quot;},&quot;codeUrl&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Links&quot;},&quot;hfUrl&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Links&quot;},&quot;showPdf&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Links&quot;},&quot;stepMs&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:1300,&quot;min&quot;:700,&quot;max&quot;:2600,&quot;step&quot;:100,&quot;unit&quot;:&quot;ms&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Motion&quot;}}">
+const MONO = "'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace";
+const DARK = {
+  bg: '#0D1A1E', panel: '#12252B', card: '#152B32', ink: '#E3EEF0', muted: '#9AB0B5', line: '#2B4850', line2: '#1F383F',
+  teal: '#3DBDB1', 'teal-ink': '#63D1C6', dream: '#A487E3', 'dream-ink': '#BBA3F0', alert: '#F08A94', 'alert-ink': '#F59FA8',
+  link: '#72B6EC', amber: '#E7B45A', 'amber-ink': '#EBC274', succ: '#6AA6E6', fail: '#F08A94', green: '#5BBFA9',
+  hl: 'rgba(61,189,177,.16)', seed: 'rgba(255,255,255,.035)', figbg: '#F3F6F6', navbg: 'rgba(13,26,30,.84)', band: '#0A1619',
+  'dream-tint': 'rgba(164,135,227,.14)', 'teal-tint': 'rgba(61,189,177,.13)', 'amber-tint': 'rgba(231,180,90,.13)',
+  'alert-tint': 'rgba(240,138,148,.13)', 'blue-tint': 'rgba(106,166,230,.13)', 'logo-filter': 'invert(1) hue-rotate(180deg)'
+};
+const SEQ = (() => { const s = []; for (let it = 1; it <= 3; it++) s.push(['batch', it, 0], ['batch', it, 1], ['dream', it, 0], ['dream', it, 1], ['dream', it, 2], ['discern', it, 0], ['discern', it, 1]); s.push(['runtime', 3, 0], ['runtime', 3, 1], ['runtime', 3, 2], ['runtime', 3, 3]); return s; })();
+const BASE = [[0, 24, 28, .9], [0, 33, 56, .6], [0, 19, 70, 1], [0, 38, 36, .8], [0, 42, 72, .55], [0, 28, 44, .7], [1, 76, 30, .7], [1, 64, 60, 1], [1, 82, 66, .6], [1, 61, 38, .9], [1, 71, 78, .55], [1, 79, 48, .8]];
+const DIRS = [[17, -5], [15, 6], [16, -2]];
+const ANG = [0, -7, 5, -3];
+const LOSS = { batch: [44, 38, 33], dream: [74, 70, 66], discern: [34, 29, 24] };
+const RUN = [[24, 56], [33, 49], [43, 55], [56, 46], [68, 40]];
+const CASE = { d2d: [0.02, 0, 0, 0, 0, 0, 3.6799, 1.4596, 1.3135], base: [0, 0, 0, 0, 0, 0, 0.9414, 0.9997, 1.0003], sens: [0.265, 0, 0, 0, 0, 0, 0.41, 0.15, 0] };
+
+class Component extends DCLogic {
+  state = { dark: false, bench: 'af', filter: 'all', data: null, dataErr: false, loopTick: 0, loopPlaying: true, caseStep: 1, lb: null, copied: false };
+  loopRef = React.createRef();
+  bibRef = React.createRef();
+  videoRef = React.createRef();
+  lbImgRef = React.createRef();
+  caseRef = React.createRef();
+
+  syncMedia() {
+    const v = this.videoRef.current;
+    if (v && v !== this.vEl) {
+      this.vEl = v;
+      v.muted = true; v.defaultMuted = true; v.playsInline = true;
+      v.setAttribute('muted', ''); v.setAttribute('playsinline', '');
+      if (this.reduced) v.controls = true;
+      if (this.vio) this.vio.disconnect();
+      if ('IntersectionObserver' in window) {
+        this.vio = new IntersectionObserver(es => es.forEach(e => { this.vRatio = e.isIntersecting ? e.intersectionRatio : 0; this.playVideo(); }), { threshold: [0, 0.3] });
+        this.vio.observe(v);
+      } else { this.vRatio = 1; this.playVideo(); }
+    }
+    if (v) this.playVideo();
+    const im = this.lbImgRef.current, lb = this.state.lb;
+    if (im && lb && im.getAttribute('src') !== lb.src) im.setAttribute('src', lb.src);
+  }
+
+  playVideo() {
+    const v = this.vEl, src = this.props.videoSrc ?? '';
+    if (!v || !src) return;
+    if (this.vRatio > 0 && v.getAttribute('src') !== src) v.setAttribute('src', src);
+    if (this.reduced || !v.getAttribute('src')) return;
+    if (this.vRatio >= 0.3) { if (v.paused) { const p = v.play(); if (p && p.catch) p.catch(() => {}); } }
+    else if (!v.paused) v.pause();
+  }
+
+  scheduleCase() {
+    clearTimeout(this.ct);
+    const DUR = [0, 1500, 300, 300, 300, 300, 1000, 2800, 1700, 3800];
+    this.ct = setTimeout(() => {
+      if (!this.reduced && this.caseVisible) this.setState(st => ({ caseStep: st.caseStep >= 9 ? 1 : st.caseStep + 1 }));
+      this.scheduleCase();
+    }, DUR[this.state.caseStep] || 1000);
+  }
+
+  componentDidUpdate(pp, ps) {
+    this.syncMedia();
+    if (ps && (ps.bench !== this.state.bench || ps.filter !== this.state.filter)) this.queueBalance();
+  }
+
+  queueBalance(ms = 0) { clearTimeout(this.bt); this.bt = setTimeout(() => this.balanceAll(), ms); }
+
+  balanceAll() {
+    const recs = Array.from(document.querySelectorAll('[data-balance]')).map(el => {
+      const r = this.balance(el);
+      return r ? Object.assign(r, { el, par: el.offsetParent, top: Math.round(el.getBoundingClientRect().top) }) : null;
+    }).filter(Boolean);
+    // Paragraphs that sit side by side should end on the same line: undo pull-ups that leave one shorter than its row.
+    const rows = [];
+    recs.forEach(r => { const g = rows.find(x => x.par === r.par && Math.abs(x.top - r.top) <= 2); if (g) g.items.push(r); else rows.push({ par: r.par, top: r.top, items: [r] }); });
+    rows.forEach(g => {
+      if (g.items.length < 2) return;
+      const target = Math.max(...g.items.map(r => r.n));
+      g.items.forEach(r => { if (r.pulled && r.n < target) this.balance(r.el, true); });
+    });
+  }
+
+  lineInfo(el) {
+    const r = document.createRange(); r.selectNodeContents(el);
+    const rects = Array.from(r.getClientRects()).filter(x => x.width > 0.5 && x.height > 0);
+    if (!rects.length) return null;
+    const lines = [];
+    rects.forEach(x => {
+      const mid = x.top + x.height / 2;
+      const L = lines.find(l => Math.abs(l.mid - mid) < Math.max(4, x.height * 0.45));
+      if (!L) lines.push({ mid, left: x.left, right: x.right });
+      else { L.left = Math.min(L.left, x.left); L.right = Math.max(L.right, x.right); }
+    });
+    lines.sort((a, b) => a.mid - b.mid);
+    const cs = getComputedStyle(el), w = el.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+    const last = lines[lines.length - 1];
+    return { n: lines.length, last: w > 0 ? (last.right - last.left) / w : 1 };
+  }
+
+  // Keep justified paragraphs free of short last lines: the smallest spacing nudge that pulls the last words up or fills the last line past half.
+  balance(el, noPull) {
+    const set = (k, dir) => { el.style.letterSpacing = k ? (dir * 0.005 * k).toFixed(3) + 'em' : ''; el.style.wordSpacing = k ? (dir * 0.04 * k).toFixed(2) + 'em' : ''; };
+    set(0);
+    const base = this.lineInfo(el);
+    if (!base) return null;
+    if (base.n < 2 || base.last >= 0.5) return { n: base.n, pulled: false };
+    const found = {};
+    for (const dir of noPull ? [1] : [-1, 1]) {
+      for (let k = 1; k <= 5; k++) {
+        set(k, dir);
+        const i = this.lineInfo(el);
+        if (!i) break;
+        if (dir < 0 && i.n < base.n) { found[dir] = { k, n: i.n }; break; }
+        if (i.n === base.n && i.last >= 0.5) { found[dir] = { k, n: i.n }; break; }
+        if (i.n > base.n) break;
+      }
+    }
+    const t = found[-1], l = found[1];
+    if (t && (!l || t.k <= l.k)) { set(t.k, -1); return { n: t.n, pulled: true }; }
+    if (l) { set(l.k, 1); return { n: l.n, pulled: false }; }
+    set(0);
+    return { n: base.n, pulled: false };
+  }
+  loopVisible = false;
+
+  componentDidMount() {
+    this.reduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    if (this.reduced) this.setState({ caseStep: 9 });
+    this.syncMedia();
+    this.onResize = () => this.queueBalance(150);
+    window.addEventListener('resize', this.onResize);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => this.queueBalance());
+    this.queueBalance(60);
+    let saved = null;
+    try { saved = localStorage.getItem('d2d-theme'); } catch (e) {}
+    if (saved === 'dark') this.setTheme(true);
+    import(new URL('data/results.js', document.baseURI).href)
+      .then(m => this.setState({ data: m }))
+      .catch(e => { console.warn('[d2d] could not load data/results.js', e); this.setState({ dataErr: true }); });
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) this.setState({ loopPlaying: false });
+    if ('IntersectionObserver' in window) {
+      this.io = new IntersectionObserver(es => { this.loopVisible = es.some(e => e.isIntersecting); }, { threshold: 0.15 });
+      if (this.loopRef.current) this.io.observe(this.loopRef.current);
+    } else this.loopVisible = true;
+    this.scheduleLoop();
+    if ('IntersectionObserver' in window) {
+      this.cio = new IntersectionObserver(es => {
+        const vis = es.some(e => e.isIntersecting);
+        if (vis && !this.caseVisible && !this.reduced) this.setState({ caseStep: 1 });
+        this.caseVisible = vis;
+      }, { threshold: 0.25 });
+      if (this.caseRef.current) this.cio.observe(this.caseRef.current);
+    } else this.caseVisible = true;
+    this.scheduleCase();
+    this.onKey = e => { if (e.key === 'Escape' && this.state.lb) this.setState({ lb: null }); };
+    window.addEventListener('keydown', this.onKey);
+  }
+
+  componentWillUnmount() {
+    clearTimeout(this.lt); clearTimeout(this.ct); clearTimeout(this.cpt);
+    [this.io, this.cio, this.vio].forEach(o => o && o.disconnect());
+    window.removeEventListener('keydown', this.onKey);
+    window.removeEventListener('resize', this.onResize); clearTimeout(this.bt);
+  }
+
+  setTheme(dark) {
+    const st = document.documentElement.style;
+    Object.keys(DARK).forEach(k => (dark ? st.setProperty('--' + k, DARK[k]) : st.removeProperty('--' + k)));
+    st.colorScheme = dark ? 'dark' : 'light';
+    try { localStorage.setItem('d2d-theme', dark ? 'dark' : 'light'); } catch (e) {}
+    this.setState({ dark });
+  }
+
+  scheduleLoop() {
+    clearTimeout(this.lt);
+    this.lt = setTimeout(() => {
+      if (this.state.loopPlaying && this.loopVisible) this.setState(s => ({ loopTick: (s.loopTick + 1) % SEQ.length }));
+      this.scheduleLoop();
+    }, this.props.stepMs ?? 1300);
+  }
+
+  copyBib() {
+    const el = this.bibRef.current;
+    if (!el) return;
+    const txt = el.innerText.replace(/\u00a0/g, ' ');
+    const done = () => { this.setState({ copied: true }); clearTimeout(this.cpt); this.cpt = setTimeout(() => this.setState({ copied: false }), 1800); };
+    const fallback = () => {
+      const ta = document.createElement('textarea');
+      ta.value = txt; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); done(); } catch (e) {}
+      ta.remove();
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(done, fallback);
+    else fallback();
+  }
+
+  loopVals() {
+    const [ph, it, sub] = SEQ[this.state.loopTick];
+    const k = it - 1, run = ph === 'runtime', dreamed = ph === 'dream' || ph === 'discern';
+    const angle = run ? ANG[3] : ph === 'discern' ? ANG[it] : ANG[k];
+    const rad = angle * Math.PI / 180, ca = Math.cos(rad), sa = Math.sin(rad);
+    const side = (x, y) => (x - 50) * 1.6 * ca + (y - 50) * sa;
+    const ease = 'cubic-bezier(.45,0,.2,1)';
+    const tr = `left .9s ${ease}, top .9s ${ease}, opacity .45s ease`;
+    const dir = DIRS[k], spread = 2.4 * k;
+    const pts = [], ghosts = [];
+    BASE.forEach(([lab, bx, by, c], i) => {
+      const jx = ((i * 7 + it * 5) % 5) - 2, jy = ((i * 3 + it * 7) % 5) - 2;
+      const x0 = bx + (lab ? spread : -spread) + jx, y0 = by + jy;
+      const f = ph === 'discern' ? 0.42 : 1, sg = lab ? -1 : 1;
+      const x = dreamed ? x0 + sg * dir[0] * c * f : x0, y = dreamed ? y0 + sg * dir[1] * c * f : y0;
+      const wrong = dreamed && (lab ? side(x, y) < 0 : side(x, y) > 0);
+      pts.push({
+        isS: !lab, isF: !!lab,
+        pos: { position: 'absolute', left: x + '%', top: y + '%', width: 0, height: 0, opacity: run ? 0 : 1, transition: tr, zIndex: 3 },
+        halo: { position: 'absolute', left: -13, top: -13, width: 26, height: 26, borderRadius: '50%', background: 'var(--dream,#8864CF)', opacity: dreamed ? 0.24 : 0, transition: 'opacity .45s' },
+        ring: { position: 'absolute', left: -13, top: -13, width: 26, height: 26, borderRadius: '50%', boxShadow: 'inset 0 0 0 2px var(--alert,#E96D79)', opacity: wrong ? 1 : 0, transition: 'opacity .3s' }
+      });
+      ghosts.push({
+        pos: { position: 'absolute', left: x0 + '%', top: y0 + '%', width: 0, height: 0, opacity: dreamed ? 0.75 : 0, transition: tr, zIndex: 2 },
+        shape: { position: 'absolute', left: -6, top: -6, width: 12, height: 12, boxSizing: 'border-box', borderRadius: '50%', border: '1.5px dashed ' + (lab ? 'var(--fail,#E9737E)' : 'var(--succ,#4A86CF)') }
+      });
+    });
+    const shown = run ? [2, 3, 4, 5][sub] : 0;
+    const rpts = RUN.map(([x, y], i) => ({
+      t: 't=' + (i + 1),
+      pos: { position: 'absolute', left: x + '%', top: y + '%', width: 0, height: 0, opacity: i < shown ? 1 : 0, transition: 'opacity .4s', zIndex: 4 },
+      dot: { position: 'absolute', left: -6, top: -6, width: 12, height: 12, borderRadius: '50%', background: i >= 3 ? 'var(--alert,#E96D79)' : 'var(--ink,#153A43)', boxShadow: '0 0 0 2px var(--card,#FFFFFF)' }
+    }));
+    const runLine = RUN.slice(0, shown).map(p => p[0] + ',' + p[1]).join(' ');
+    const rot = { transform: `rotate(${angle}deg)`, transition: `transform 1s ${ease}` };
+    const tint = { batch: ['var(--amber,#E3A33B)', 'var(--amber-tint,#FBF3E4)'], dream: ['var(--dream,#8864CF)', 'var(--dream-tint,#F3EEFB)'], discern: ['var(--teal,#269E95)', 'var(--teal-tint,#E6F4F2)'], runtime: ['var(--link,#1F77B8)', 'var(--blue-tint,#E8F1FA)'] };
+    const on = (cond, key, r) => ({ position: 'absolute', inset: 0, borderRadius: r, background: tint[key][1], boxShadow: `inset 0 0 0 1.5px ${tint[key][0]}`, opacity: cond ? 1 : 0, transition: 'opacity .3s' });
+    const go = phase => () => {
+      const cur = SEQ[this.state.loopTick];
+      const itx = phase === 'runtime' ? 3 : cur[0] === 'runtime' ? 1 : cur[1];
+      const idx = SEQ.findIndex(s => s[0] === phase && s[1] === itx);
+      this.setState({ loopTick: Math.max(0, idx), loopPlaying: false });
+    };
+    const lossH = run ? 0 : LOSS[ph][k];
+    return {
+      pts, ghosts, rpts, runLine,
+      regionStyle: { position: 'absolute', left: '-100%', top: '-100%', width: '300%', height: '300%', background: 'linear-gradient(90deg, var(--blue-tint,#E8F1FA) 50%, var(--alert-tint,#FCEBED) 50%)', ...rot },
+      boundaryStyle: { position: 'absolute', left: '50%', top: '-30%', height: '160%', width: 0, borderLeft: '2px dashed var(--ink,#153A43)', opacity: 0.5, transformOrigin: '50% 50%', zIndex: 1, ...rot },
+      alertStyle: { position: 'absolute', left: RUN[3][0] + '%', top: RUN[3][1] + '%', transform: 'translate(-50%, 70%)', zIndex: 5, padding: '3px 8px', borderRadius: 6, background: 'var(--alert,#E96D79)', color: '#FFFFFF', fontFamily: MONO, fontSize: 10.5, fontWeight: 600, whiteSpace: 'nowrap', opacity: shown >= 4 ? 1 : 0, transition: 'opacity .35s' },
+      meterStyle: { position: 'absolute', left: 0, right: 0, bottom: 0, height: lossH + '%', background: ph === 'dream' ? 'var(--dream,#8864CF)' : ph === 'discern' ? 'var(--teal,#269E95)' : 'var(--muted,#61757B)', transition: `height .9s ${ease}, background-color .4s` },
+      meterArrow: ph === 'dream' ? '↑' : ph === 'discern' ? '↓' : run ? '–' : '·',
+      vizTag: { batch: 'Recorded prefixes · V = 0', dream: 'Dream · perturbation on, head fixed', discern: 'Discern · update adapters and head', runtime: 'Runtime · V = 0' }[ph],
+      loopIterLabel: run ? 'After training' : `Iteration ${it} of 3`,
+      isBatch: ph === 'batch', isDream: ph === 'dream', isDiscern: ph === 'discern', isRuntime: run,
+      dreamSub0: ph === 'dream' && sub === 0, dreamSub1: ph === 'dream' && sub === 1, dreamSub2: ph === 'dream' && sub === 2,
+      railBatch: on(ph === 'batch', 'batch', 999), railDream: on(ph === 'dream', 'dream', 999), railDiscern: on(ph === 'discern', 'discern', 999), railRun: on(run, 'runtime', 999),
+      subA: on(ph === 'dream' && sub === 0, 'dream', 8), subB: on(ph === 'dream' && sub === 1, 'dream', 8), subC: on(ph === 'dream' && sub === 2, 'dream', 8),
+      loopRef: this.loopRef, loopPlaying: this.state.loopPlaying, loopPaused: !this.state.loopPlaying,
+      toggleLoop: () => this.setState(s => ({ loopPlaying: !s.loopPlaying })),
+      goBatch: go('batch'), goDream: go('dream'), goDiscern: go('discern'), goRuntime: go('runtime')
+    };
+  }
+
+  caseVals() {
+    const t = this.state.caseStep;
+    const X = k => 4 + (k - 1) * 11.5, Yf = v => 100 - (v / 4.2) * 100, Ys = v => 100 - (v / 0.5) * 100;
+    const line = (arr, Y) => arr.slice(0, t).map((v, i) => X(i + 1).toFixed(2) + ',' + Y(v).toFixed(2)).join(' ');
+    const at = (x, y) => ({ position: 'absolute', left: x + '%', top: y + '%', width: 0, height: 0, zIndex: 2 });
+    const marks = (arr, Y) => arr.slice(0, t).map((v, i) => ({ pos: at(X(i + 1), Y(v)) }));
+    const L = (k, w, tr) => { const v = CASE[w][k - 1], d = w === 'd2d'; return { txt: v.toFixed(4), st: { position: 'absolute', left: X(k) + '%', top: Yf(v) + '%', transform: tr, zIndex: 4, fontFamily: MONO, fontSize: 10.5, fontWeight: d ? 600 : 400, color: d ? 'var(--green,#2F7466)' : 'var(--succ,#4A86CF)', whiteSpace: 'nowrap' } }; };
+    const valLabels = [];
+    if (t >= 7) valLabels.push(L(7, 'd2d', 'translate(16px,-50%)'));
+    if (t === 7) valLabels.push(L(7, 'base', 'translate(6px,40%)'));
+    if (t === 8) valLabels.push(L(8, 'd2d', 'translate(6px,-150%)'), L(8, 'base', 'translate(-50%,70%)'));
+    if (t === 9) valLabels.push(L(9, 'd2d', 'translate(calc(-100% + 4px),-230%)'), L(9, 'base', 'translate(calc(-100% - 12px),50%)'));
+    const row = (from, to) => {
+      const seen = t >= from, cur = t >= from && t <= to;
+      return { padding: '12px 14px', borderRadius: 12, border: '1px solid ' + (cur ? 'var(--line,#C9DFE2)' : 'transparent'), background: cur ? 'var(--card,#FFFFFF)' : 'transparent', boxShadow: cur ? '0 1px 3px rgba(21,58,67,.08)' : 'none', opacity: seen ? 1 : 0.32, transition: 'opacity .4s, background-color .4s, border-color .4s' };
+    };
+    const caseSegs = Array.from({ length: 9 }, (_, i) => ({ st: { display: 'block', width: i === 6 ? 22 : 14, height: 6, borderRadius: 999, background: i < t ? (i === 6 ? 'var(--alert,#E96D79)' : 'var(--teal,#269E95)') : 'var(--line2,#E2EEF0)', transition: 'background-color .3s' } }));
+    const sc = v => (v < 0.05 ? '≈ 0' : v.toFixed(4));
+    const d2dAlert = t >= 7, baseAlert = t >= 9;
+    const chip = al => ({ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '6px 12px', borderRadius: 999, border: '1px solid ' + (al ? 'var(--alert,#E96D79)' : 'var(--line2,#E2EEF0)'), background: al ? 'var(--alert-tint,#FCEBED)' : 'var(--panel,#F2F9FA)', fontFamily: MONO, fontSize: 12, color: 'var(--ink,#153A43)', transition: 'background-color .3s, border-color .3s' });
+    const NOTES = {
+      1: ['Step 1', 'CodeWriter returns a correct median implementation. Both auditors score the prefix near zero.'],
+      2: ['Steps 2–6', 'Intermediate interactions, not shown in the paper figure. Both scores stay near zero.'],
+      7: ['Step 7', 'CodeTester replaces the median with max during verification. Dream2Discern predicts failure at this ground-truth error step, while the auditor trained without perturbations stays below the decision boundary. Dream sensitivity also peaks here.'],
+      8: ['Step 8', 'Dream2Discern keeps predicting failure. The auditor trained without perturbations reaches 0.9997, still below the boundary.'],
+      9: ['Step 9', 'The environment reports TEST_FAILED. Only now does the auditor trained without perturbations cross the boundary, two interactions after Dream2Discern.']
+    };
+    const note = NOTES[t === 1 ? 1 : t <= 6 ? 2 : t];
+    return {
+      caseRef: this.caseRef, caseRange: t === 1 ? 'step 1' : 'steps 1–' + t, caseSegs,
+      d2dLine: line(CASE.d2d, Yf), baseLine: line(CASE.base, Yf), sensLine: line(CASE.sens, Ys),
+      d2dMarks: marks(CASE.d2d, Yf), baseMarks: marks(CASE.base, Yf), sensMarks: marks(CASE.sens, Ys), valLabels,
+      cursorStyle: { position: 'absolute', top: 0, bottom: 0, left: X(t) + '%', width: 0, borderLeft: '1px solid var(--muted,#61757B)', opacity: 0.35, transition: 'left .35s' },
+      row1: row(1, 1), row26: row(2, 6), row7: row(7, 7), row8: row(8, 8), row9: row(9, 9),
+      d2dScore: sc(CASE.d2d[t - 1]), baseScore: sc(CASE.base[t - 1]),
+      d2dAlert, baseAlert, d2dChip: chip(d2dAlert), baseChip: chip(baseAlert),
+      d2dVerdict: d2dAlert ? 'Predicts failure' : 'Predicts success', baseVerdict: baseAlert ? 'Predicts failure' : 'Predicts success',
+      caseLabel: note[0], caseNote: note[1]
+    };
+  }
+
+  tableVals() {
+    const S = this.state, D = S.data, bk = S.bench === 'ss' ? 'ss' : 'af', bn = bk === 'ss' ? 'StepShield' : 'AFTraj-2K';
+    const fmt = (c, ours) => ({
+      v: c[0].toFixed(2), s: c[1] == null ? '' : '±' + c[1].toFixed(2),
+      emph: { fontWeight: c[2] === 'b' ? 700 : ours ? 600 : 400, textDecoration: c[2] === 'u' ? 'underline' : 'none', textUnderlineOffset: '3px', textDecorationThickness: '1.5px' }
+    });
+    const GRID = 'minmax(200px,1.8fr) repeat(4,minmax(90px,1fr))';
+    const mainGroups = D ? D.MAIN.filter(g => S.filter === 'all' || g.group === 'Failure auditors').map(g => ({
+      name: g.group,
+      rows: g.rows.map(r => ({
+        method: r.method, cells: r[bk].map(c => fmt(c, r.ours)),
+        rowStyle: { display: 'grid', gridTemplateColumns: GRID, alignItems: 'center', borderTop: '1px solid var(--line2,#E2EEF0)', background: r.ours ? 'var(--hl,#D9F0F8)' : r.seeded ? 'var(--seed,#F6F9F9)' : 'transparent' },
+        mStyle: { padding: '10px 14px', fontSize: 15.5, fontWeight: r.ours ? 700 : 400 }
+      }))
+    })) : [];
+    const GRID2 = 'minmax(118px,1.1fr) minmax(132px,1.3fr) repeat(3,minmax(84px,1fr))';
+    const fam = (obj, h) => (obj && obj[bn] ? Object.entries(obj[bn]).flatMap(([model, rows]) => rows.map((r, i) => ({
+      model: i === 0 ? model : '', method: r.method, cells: r.v.map(c => fmt(c, r.ours)),
+      rowStyle: { display: 'grid', gridTemplateColumns: GRID2, alignItems: 'center', boxSizing: 'border-box', height: h, lineHeight: '20px', borderTop: '1px solid ' + (i === 0 ? 'var(--line,#C9DFE2)' : 'var(--line2,#E2EEF0)'), background: r.ours ? 'var(--hl,#D9F0F8)' : 'transparent' },
+      mStyle: { padding: '10px 12px', fontSize: 15, fontWeight: r.ours ? 700 : 400 }
+    }))) : []);
+    const seg = active => ({ position: 'absolute', inset: 0, borderRadius: 999, background: 'var(--panel,#F2F9FA)', boxShadow: 'inset 0 0 0 1.5px var(--teal,#269E95)', opacity: active ? 1 : 0, transition: 'opacity .2s' });
+    return {
+      mainGroups, llamaRows: fam(D && D.LLAMA, 42), ablRows: fam(D && D.ABLATION, 56), benchName: bn,
+      benchAF: bk === 'af', benchSS: bk === 'ss',
+      segAF: seg(bk === 'af'), segSS: seg(bk === 'ss'), segAll: seg(S.filter === 'all'), segAud: seg(S.filter !== 'all'),
+      setAF: () => this.setState({ bench: 'af' }), setSS: () => this.setState({ bench: 'ss' }),
+      setAll: () => this.setState({ filter: 'all' }), setAud: () => this.setState({ filter: 'auditors' })
+    };
+  }
+
+  renderVals() {
+    const P = this.props, S = this.state;
+    const arxiv = P.arxivUrl ?? '', code = P.codeUrl ?? '', hf = P.hfUrl ?? '', vsrc = P.videoSrc ?? '';
+    return {
+      ...this.loopVals(), ...this.caseVals(), ...this.tableVals(),
+      isLight: !S.dark, isDark: S.dark, toggleTheme: () => this.setTheme(!S.dark),
+      arxivUrl: arxiv, hasArxiv: !!arxiv, noArxiv: !arxiv,
+      codeUrl: code, hasCode: !!code, noCode: !code,
+      hfUrl: hf, hasHf: !!hf, noHf: !hf,
+      showPdf: P.showPdf ?? true,
+      videoSrc: vsrc, hasVideo: !!vsrc, noVideo: !vsrc,
+      videoLink: P.videoLink ?? 'https://claude.ai/artifact/3nvAskB9qmrsMe9fAtHmhg',
+      openFig: e => {
+        const btn = e.currentTarget, img = btn.querySelector('img'), fig = btn.closest('figure');
+        const cap = fig ? fig.querySelector('figcaption') : null;
+        if (img) this.setState({ lb: { src: img.getAttribute('src'), alt: img.getAttribute('alt') || '', caption: cap ? cap.textContent : '' } });
+      },
+      closeFig: e => { if (e) e.stopPropagation(); this.setState({ lb: null }); },
+      lbOpen: !!S.lb, lbImgRef: this.lbImgRef, videoRef: this.videoRef, lbAlt: S.lb ? S.lb.alt : '', lbCaption: S.lb ? S.lb.caption : '',
+      bibRef: this.bibRef, copyBib: () => this.copyBib(), copied: S.copied, notCopied: !S.copied
+    };
+  }
+}
+</script>
+</body>
+</html>

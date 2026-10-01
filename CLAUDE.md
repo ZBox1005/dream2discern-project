@@ -1,0 +1,4 @@
+- Project page for the Dream2Discern paper. Main file: Dream2Discern.dc.html. Repo: ZBox1005/dream2discern-project (see github.md).
+- Keep paper text (abstract, research question, captions, numbers) verbatim from docs/paper-notes.md; table numbers live in data/results.js.
+- Brand: colors from dream2discern_preprint.cls (ink #153A43, teal #269E95, dream #8864CF, alert #E96D79, blue #268BD2, pale #F2F9FA); Charis SIL + JetBrains Mono.
+- arXiv, code and Hugging Face links are placeholders until the user provides them; the animation video is pending an MP4 export.
