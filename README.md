@@ -26,6 +26,6 @@ The site is arranged for publishing from the `main` branch's root directory. In 
 
 `arxivUrl`, `codeUrl` and `hfUrl` remain empty until those destinations are available. The BibTeX entry marks the arXiv identifier as pending rather than showing a fabricated ID.
 
-The animation is an HTML/JavaScript player, not an MP4. It is isolated in a sandboxed iframe. Its controls and playback behavior come from the supplied file. In the published copy, the Claude Design credit moves to the upper-right corner so it does not cover mobile playback controls. The standalone-only Export button is hidden because it requires the original authoring host. The original file in Downloads was not changed.
+The animation is an HTML/JavaScript player, not an MP4. It is isolated in a sandboxed iframe and loops automatically. The published viewer hides its playback bar, Claude Design badge and host-only Export button. Its scale calculation uses the full 16:9 canvas height so hiding the bar does not create black edges. The original file in Downloads was not changed.
 
-The player uses a 16:9 drawing canvas plus a 44px playback bar. The iframe wrapper reserves that extra 44px below the canvas; keep the two parts together if changing its size, or the player will shrink the drawing and leave black bars at the sides.
+If restoring the playback bar in a later version, update both the animation's `barH` scale reservation and the iframe wrapper height together; the visible canvas is 16:9 and the original bar needed another 44px.
