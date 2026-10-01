@@ -20,8 +20,10 @@ The site is arranged for publishing from the `main` branch's root directory. In 
 
 - `index.html`: page markup, styles, interactions and page properties.
 - `data/results.js`: result tables.
-- `assets/video/dream2discern.mp4`: current v3 animation. Replace this file to update the on-page video; it starts muted when scrolled into view.
+- `assets/animation/dream2discern.html`: the supplied self-contained animation, embedded in the video section. Replace this file to update the on-page animation. The link below the frame opens it at full size.
 - `figures/`, `assets/`, `paper/dream2discern.pdf`: figures, logos and downloadable paper.
 - `docs/paper-notes.md`: source notes for the abstract, captions and result numbers.
 
 `arxivUrl`, `codeUrl` and `hfUrl` remain empty until those destinations are available. The BibTeX entry marks the arXiv identifier as pending rather than showing a fabricated ID.
+
+The animation is an HTML/JavaScript player, not an MP4. It is isolated in a sandboxed iframe. Its controls and playback behavior come from the supplied file. In the published copy, the Claude Design credit moves to the upper-right corner so it does not cover mobile playback controls. The standalone-only Export button is hidden because it requires the original authoring host. The original file in Downloads was not changed.
