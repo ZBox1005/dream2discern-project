@@ -398,8 +398,8 @@ button{font:inherit}
         <p style="margin:8px 0 0;font-size:15.5px;line-height:1.55;text-align:justify;hyphens:auto;text-wrap:pretty" data-balance="1"><strong>AUROC</strong> and <strong>FPR95</strong> from each trajectory's maximum prefix score; <strong>wACC</strong>, trajectory-level weighted accuracy; <strong>TWA</strong>, time-weighted accuracy rewarding earlier detection.</p>
       </div>
       <div style="padding:18px 20px;border:1px solid var(--line2,#E2EEF0);border-radius:14px;background:var(--card,#FFFFFF)">
-        <div style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted,#61757B)">Backbones</div>
-        <p style="margin:8px 0 0;font-size:15.5px;line-height:1.55;text-align:justify;hyphens:auto;text-wrap:pretty" data-balance="1">Qwen3-4B, Qwen3-8B, Llama-3.2-3B-Instruct and Llama-3.1-8B-Instruct. Trained auditors on Qwen3 report the mean and standard deviation over three seeds.</p>
+        <div style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted,#61757B)">Shown models</div>
+        <p style="margin:8px 0 0;font-size:15.5px;line-height:1.55;text-align:justify;hyphens:auto;text-wrap:pretty" data-balance="1">Open-weight judges: Qwen3-8B, LlamaGuard3-8B and Qwen3-32B; closed-source judges remain. SAFE, H&amp;S and TRACES use Qwen3-8B; <em>Dream2Discern</em> shows 4B and 8B.</p>
       </div>
     </div>
     <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px 16px;margin:36px 0 14px">
@@ -437,57 +437,13 @@ button{font:inherit}
         </sc-for>
       </div>
     </div>
-    <p style="margin:12px 2px 0;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11.5px;line-height:1.6;color:var(--muted,#61757B)">Table 1. Shaded rows: SAFE, Hide-and-Seek (H&amp;S) and TRACES on the same Qwen3 backbones. ± is the standard deviation over three training seeds.</p>
+    <p style="margin:12px 2px 0;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11.5px;line-height:1.6;color:var(--muted,#61757B)">Table 1 · selected rows. Shaded rows: SAFE, Hide-and-Seek (H&amp;S) and TRACES with Qwen3-8B. ± is the standard deviation over three training seeds.</p>
     <sc-if value="{{ benchAF }}" hint-placeholder-val="{{ true }}">
-      <p style="margin:22px auto 0;max-width:920px;font-size:clamp(17px,1.3vw,18.5px);line-height:1.7;text-align:justify;hyphens:auto;text-wrap:pretty" data-balance="1">On in-domain AFTraj-2K, <em>Dream2Discern</em> leads all four metrics. For both Qwen3 backbones it outperforms SAFE, Hide-and-Seek and TRACES on all four metrics, averaged over three seeds.</p>
+      <p style="margin:22px auto 0;max-width:920px;font-size:clamp(17px,1.3vw,18.5px);line-height:1.7;text-align:justify;hyphens:auto;text-wrap:pretty" data-balance="1">On in-domain AFTraj-2K, <em>Dream2Discern</em> leads all four metrics. With Qwen3-8B, it outperforms SAFE, Hide-and-Seek and TRACES on every metric, averaged over three seeds.</p>
     </sc-if>
     <sc-if value="{{ benchSS }}" hint-placeholder-val="{{ false }}">
       <p style="margin:22px auto 0;max-width:920px;font-size:clamp(17px,1.3vw,18.5px);line-height:1.7;text-align:justify;hyphens:auto;text-wrap:pretty" data-balance="1">On out-of-domain StepShield, <em>Dream2Discern</em> leads wACC and TWA. LLM judges are more competitive here, yet the 4B auditor exceeds Claude-Sonnet-4.6 in wACC and TWA, and its wACC advantage over failure auditors is substantially larger than on AFTraj-2K.</p>
     </sc-if>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,460px),1fr));gap:32px 18px;margin:44px 0 0">
-      <div style="min-width:0;display:grid;grid-row:span 4;grid-template-rows:subgrid;row-gap:0;">
-        <h3 style="margin:0;font-size:22px;line-height:1.25">Generalization across model families</h3>
-        <p style="margin:8px 0 14px;font-size:16px;line-height:1.6;color:var(--muted,#61757B);text-align:justify;hyphens:auto;text-wrap:pretty" data-balance="1"><em>Dream2Discern</em> has the highest wACC in all four Llama settings.</p>
-        <div style="overflow-x:auto;border:1px solid var(--line,#C9DFE2);border-radius:14px;background:var(--card,#FFFFFF)">
-          <div style="min-width:520px">
-            <div style="display:grid;grid-template-columns:minmax(118px,1.1fr) minmax(132px,1.3fr) repeat(3,minmax(84px,1fr));align-items:end;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11.5px;font-weight:600;color:var(--muted,#61757B)">
-              <div style="padding:12px">Base model</div><div style="padding:12px">Method</div><div style="padding:12px 6px;text-align:center">AUROC ↑</div><div style="padding:12px 6px;text-align:center">wACC ↑</div><div style="padding:12px 6px;text-align:center">TWA ↑</div>
-            </div>
-            <sc-for list="{{ llamaRows }}" as="r" hint-placeholder-count="8">
-              <div style="{{ r.rowStyle }}">
-                <div style="padding:10px 12px;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12px;color:var(--muted,#61757B)">{{ r.model }}</div>
-                <div style="{{ r.mStyle }}">{{ r.method }}</div>
-                <sc-for list="{{ r.cells }}" as="c" hint-placeholder-count="3">
-                  <div style="padding:10px 6px;text-align:center;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:13px;font-variant-numeric:tabular-nums;white-space:nowrap"><span style="{{ c.emph }}">{{ c.v }}</span><span style="margin-left:3px;font-size:10px;color:var(--muted,#61757B)">{{ c.s }}</span></div>
-                </sc-for>
-              </div>
-            </sc-for>
-          </div>
-        </div>
-        <p style="margin:10px 2px 0;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11.5px;color:var(--muted,#61757B)">Table 2 · {{ benchName }}</p>
-      </div>
-      <div style="min-width:0;display:grid;grid-row:span 4;grid-template-rows:subgrid;row-gap:0;">
-        <h3 style="margin:0;font-size:22px;line-height:1.25">Ablation on the perturbation strategy</h3>
-        <p style="margin:8px 0 14px;font-size:16px;line-height:1.6;color:var(--muted,#61757B);text-align:justify;hyphens:auto;text-wrap:pretty" data-balance="1"><em>Dream</em> perturbations yield the highest AUROC in all four settings.</p>
-        <div style="overflow-x:auto;border:1px solid var(--line,#C9DFE2);border-radius:14px;background:var(--card,#FFFFFF)">
-          <div style="min-width:520px">
-            <div style="display:grid;grid-template-columns:minmax(118px,1.1fr) minmax(132px,1.3fr) repeat(3,minmax(84px,1fr));align-items:end;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11.5px;font-weight:600;color:var(--muted,#61757B)">
-              <div style="padding:12px">Base model</div><div style="padding:12px">Strategy</div><div style="padding:12px 6px;text-align:center">AUROC ↑</div><div style="padding:12px 6px;text-align:center">wACC ↑</div><div style="padding:12px 6px;text-align:center">TWA ↑</div>
-            </div>
-            <sc-for list="{{ ablRows }}" as="r" hint-placeholder-count="6">
-              <div style="{{ r.rowStyle }}">
-                <div style="padding:10px 12px;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12px;color:var(--muted,#61757B)">{{ r.model }}</div>
-                <div style="{{ r.mStyle }}">{{ r.method }}</div>
-                <sc-for list="{{ r.cells }}" as="c" hint-placeholder-count="3">
-                  <div style="padding:10px 6px;text-align:center;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:13px;font-variant-numeric:tabular-nums;white-space:nowrap"><span style="{{ c.emph }}">{{ c.v }}</span></div>
-                </sc-for>
-              </div>
-            </sc-for>
-          </div>
-        </div>
-        <p style="margin:10px 2px 0;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11.5px;color:var(--muted,#61757B)">Table 3 · {{ benchName }}</p>
-      </div>
-    </div>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,380px),1fr));gap:clamp(18px,3vw,40px);align-items:center;margin:56px 0 0">
       <div>
         <h3 style="margin:0;font-size:22px;line-height:1.25">Detection accuracy–timeliness trade-off</h3>
@@ -511,40 +467,10 @@ button{font:inherit}
   </div>
 </section>
 
-<section id="analysis" data-screen-label="05 Analysis" style="padding:clamp(56px,8vw,104px) 0">
-  <div style="max-width:1160px;margin:0 auto;padding:0 clamp(18px,4vw,40px)">
-    <div style="display:flex;align-items:center;gap:14px;margin:0 0 18px"><span style="flex:1;height:1px;background:var(--line2,#E2EEF0)"></span>
-      <span style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--dream-ink,#6F4CB8)">05 · Mechanism analysis</span>
-      <span style="flex:1;height:1px;background:var(--line2,#E2EEF0)"></span>
-    </div>
-    <h2 style="margin:0 auto;max-width:920px;text-align:center;font-size:clamp(30px,4.2vw,46px);line-height:1.12;letter-spacing:-.015em;text-wrap:balance">Loss-guided perturbations reflect weaknesses in outcome discrimination</h2>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,400px),1fr));gap:18px;margin:32px 0 0">
-      <div style="display:grid;grid-row:span 4;grid-template-rows:subgrid;row-gap:0;padding:clamp(20px,2.4vw,28px);border:1px solid var(--line2,#E2EEF0);border-radius:18px;background:var(--card,#FFFFFF)">
-        <div style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--dream-ink,#6F4CB8)">Variant construction</div>
-        <h3 style="margin:10px 0 8px;font-size:22px;line-height:1.25">Loss-guided search finds harder variants than random sampling</h3>
-        <p style="margin:0;font-size:16px;line-height:1.6;color:var(--muted,#61757B);text-align:justify;hyphens:auto;text-wrap:pretty" data-balance="1">We fix a Qwen3-8B auditor trained with <em>Dream2Discern</em> and apply loss-guided <em>Dream</em> or random perturbations of equal rank and radius to 50 training batches. <em>Dream</em> raises batch BCE on every batch, whereas random changes cluster near zero.</p>
-        <figure style="margin:18px 0 0">
-          <button type="button" onClick="{{ openFig }}" aria-label="Enlarge Figure 5a" style="display:block;width:100%;padding:10px;border:1px solid var(--line2,#E2EEF0);border-radius:12px;background:var(--figbg,#FFFFFF);cursor:zoom-in"><img src="figures/loss_guided_vs_random.png" alt="Per-batch prediction loss increase for random and Dream perturbations." loading="lazy" style="display:block;width:100%;height:auto"></button>
-          <figcaption style="margin:10px 2px 0;font-size:14.5px;line-height:1.5;color:var(--muted,#61757B)"><strong style="color:var(--ink,#153A43)">Figure 5a.</strong> Per-batch loss increase (<i>n</i> = 50), with median and IQR.</figcaption>
-        </figure>
-      </div>
-      <div style="display:grid;grid-row:span 4;grid-template-rows:subgrid;row-gap:0;padding:clamp(20px,2.4vw,28px);border:1px solid var(--line2,#E2EEF0);border-radius:18px;background:var(--card,#FFFFFF)">
-        <div style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--dream-ink,#6F4CB8)">Dream sensitivity</div>
-        <h3 style="margin:10px 0 8px;font-size:22px;line-height:1.25">Higher <em>Dream</em> sensitivity coincides with higher held-out error</h3>
-        <p style="margin:0;font-size:16px;line-height:1.6;color:var(--muted,#61757B);text-align:justify;hyphens:auto;text-wrap:pretty" data-balance="1">Using a Qwen3-4B auditor trained without perturbations, we average each held-out prefix's absolute score change under eight <em>Dream</em> perturbations from training batches. Error rates rise from the least to the most sensitive fifth of prefixes.</p>
-        <figure style="margin:18px 0 0">
-          <button type="button" onClick="{{ openFig }}" aria-label="Enlarge Figure 5b" style="display:block;width:100%;padding:10px;border:1px solid var(--line2,#E2EEF0);border-radius:12px;background:var(--figbg,#FFFFFF);cursor:zoom-in"><img src="figures/dream_sensitivity.png" alt="Held-out error rate across five Dream sensitivity groups." loading="lazy" style="display:block;width:100%;height:auto"></button>
-          <figcaption style="margin:10px 2px 0;font-size:14.5px;line-height:1.5;color:var(--muted,#61757B)"><strong style="color:var(--ink,#153A43)">Figure 5b.</strong> <em>Dream</em> sensitivity and held-out error.</figcaption>
-        </figure>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section id="case" data-screen-label="06 Case study" style="padding:clamp(56px,8vw,104px) 0;background:var(--panel,#F2F9FA);border-top:1px solid var(--line2,#E2EEF0);border-bottom:1px solid var(--line2,#E2EEF0)">
+<section id="case" data-screen-label="05 Case study" style="padding:clamp(56px,8vw,104px) 0;background:var(--panel,#F2F9FA);border-top:1px solid var(--line2,#E2EEF0);border-bottom:1px solid var(--line2,#E2EEF0)">
   <div style="max-width:1160px;margin:0 auto;padding:0 clamp(18px,4vw,40px)">
     <div style="display:flex;align-items:center;gap:14px;margin:0 0 18px"><span style="flex:1;height:1px;background:var(--line,#C9DFE2)"></span>
-      <span style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--alert-ink,#C2414F)">06 · Case study</span>
+      <span style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--alert-ink,#C2414F)">05 · Case study</span>
       <span style="flex:1;height:1px;background:var(--line,#C9DFE2)"></span>
     </div>
     <h2 style="margin:0 auto;max-width:920px;text-align:center;font-size:clamp(30px,4.2vw,46px);line-height:1.12;letter-spacing:-.015em;text-wrap:balance">Failure predicted at the error step, two interactions before the test fails</h2>
@@ -701,6 +627,10 @@ const ANG = [0, -7, 5, -3];
 const LOSS = { batch: [44, 38, 33], dream: [74, 70, 66], discern: [34, 29, 24] };
 const RUN = [[24, 56], [33, 49], [43, 55], [56, 46], [68, 40]];
 const CASE = { d2d: [0.02, 0, 0, 0, 0, 0, 3.6799, 1.4596, 1.3135], base: [0, 0, 0, 0, 0, 0, 0.9414, 0.9997, 1.0003], sens: [0.265, 0, 0, 0, 0, 0, 0.41, 0.15, 0] };
+const VISIBLE_MAIN_ROWS = {
+  'Open-weight LLM judges': new Set(['Qwen3-8B', 'LlamaGuard3-8B', 'Qwen3-32B']),
+  'Failure auditors': new Set(['AgentDebug-8B', 'AgentForesight-7B', 'SAFE-Qwen3-8B', 'H&S-Qwen3-8B', 'TRACES-Qwen3-8B', 'Dream2Discern-Qwen3-4B', 'Dream2Discern-Qwen3-8B'])
+};
 
 class Component extends DCLogic {
   state = { dark: false, bench: 'af', filter: 'all', data: null, dataErr: false, loopTick: 0, loopPlaying: true, caseStep: 1, lb: null, copied: false };
@@ -994,23 +924,17 @@ class Component extends DCLogic {
       emph: { fontWeight: c[2] === 'b' ? 700 : ours ? 600 : 400, textDecoration: c[2] === 'u' ? 'underline' : 'none', textUnderlineOffset: '3px', textDecorationThickness: '1.5px' }
     });
     const GRID = 'minmax(200px,1.8fr) repeat(4,minmax(90px,1fr))';
-    const mainGroups = D ? D.MAIN.filter(g => S.filter === 'all' || g.group === 'Failure auditors').map(g => ({
+    const mainGroups = D ? D.MAIN.filter(g => g.group !== 'Token uncertainty' && (S.filter === 'all' || g.group === 'Failure auditors')).map(g => ({
       name: g.group,
-      rows: g.rows.map(r => ({
+      rows: g.rows.filter(r => !VISIBLE_MAIN_ROWS[g.group] || VISIBLE_MAIN_ROWS[g.group].has(r.method)).map(r => ({
         method: r.method, cells: r[bk].map(c => fmt(c, r.ours)),
         rowStyle: { display: 'grid', gridTemplateColumns: GRID, alignItems: 'center', borderTop: '1px solid var(--line2,#E2EEF0)', background: r.ours ? 'var(--hl,#D9F0F8)' : r.seeded ? 'var(--seed,#F6F9F9)' : 'transparent' },
         mStyle: { padding: '10px 14px', fontSize: 15.5, fontWeight: r.ours ? 700 : 400 }
       }))
     })) : [];
-    const GRID2 = 'minmax(118px,1.1fr) minmax(132px,1.3fr) repeat(3,minmax(84px,1fr))';
-    const fam = (obj, h) => (obj && obj[bn] ? Object.entries(obj[bn]).flatMap(([model, rows]) => rows.map((r, i) => ({
-      model: i === 0 ? model : '', method: r.method, cells: r.v.map(c => fmt(c, r.ours)),
-      rowStyle: { display: 'grid', gridTemplateColumns: GRID2, alignItems: 'center', boxSizing: 'border-box', height: h, lineHeight: '20px', borderTop: '1px solid ' + (i === 0 ? 'var(--line,#C9DFE2)' : 'var(--line2,#E2EEF0)'), background: r.ours ? 'var(--hl,#D9F0F8)' : 'transparent' },
-      mStyle: { padding: '10px 12px', fontSize: 15, fontWeight: r.ours ? 700 : 400 }
-    }))) : []);
     const seg = active => ({ position: 'absolute', inset: 0, borderRadius: 999, background: 'var(--panel,#F2F9FA)', boxShadow: 'inset 0 0 0 1.5px var(--teal,#269E95)', opacity: active ? 1 : 0, transition: 'opacity .2s' });
     return {
-      mainGroups, llamaRows: fam(D && D.LLAMA, 42), ablRows: fam(D && D.ABLATION, 56), benchName: bn,
+      mainGroups, benchName: bn,
       benchAF: bk === 'af', benchSS: bk === 'ss',
       segAF: seg(bk === 'af'), segSS: seg(bk === 'ss'), segAll: seg(S.filter === 'all'), segAud: seg(S.filter !== 'all'),
       setAF: () => this.setState({ bench: 'af' }), setSS: () => this.setState({ bench: 'ss' }),
