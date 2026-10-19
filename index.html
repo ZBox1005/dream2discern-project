@@ -567,15 +567,15 @@ button{font:inherit}
         <sc-if value="{{ copied }}" hint-placeholder-val="{{ false }}"><span style="color:var(--teal-ink,#1C7A73)">Copied ✓</span></sc-if>
       </button>
       <div ref="{{ bibRef }}" style="padding:24px 24px 22px;overflow-x:auto;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:13.5px;line-height:1.75;color:var(--ink,#153A43)">
-        <div style="white-space:pre">@misc{zhang2026dream2discern,</div>
+        <div style="white-space:pre">@article{zhang2026dream2discern,</div>
         <div style="white-space:pre">&#160;&#160;title   = {Dream2Discern: Learning from Hard Latent Variants for Runtime Failure Prediction in Multi-Agent Systems},</div>
         <div style="white-space:pre">&#160;&#160;author  = {Zhang, Boxuan and Zhu, Jianing and Han, Xiaotian and Tang, Ruixiang},</div>
-        <div style="white-space:pre">&#160;&#160;note    = {Preprint; arXiv identifier pending},</div>
+        <div style="white-space:pre">&#160;&#160;journal = {arXiv preprint arXiv:2610.16071},</div>
         <div style="white-space:pre">&#160;&#160;year    = {2026}</div>
         <div style="white-space:pre">}</div>
       </div>
     </div>
-    <p style="margin:12px 2px 0;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11.5px;color:var(--muted,#61757B)">The arXiv identifier will be filled in once the preprint is posted.</p>
+    <p style="margin:12px 2px 0;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11.5px;color:var(--muted,#61757B)">Preprint available on arXiv.</p>
   </div>
 </section>
 
@@ -944,7 +944,9 @@ class Component extends DCLogic {
 
   renderVals() {
     const P = this.props, S = this.state;
-    const arxiv = P.arxivUrl ?? '', code = P.codeUrl ?? '', hf = P.hfUrl ?? '', vsrc = P.videoSrc ?? '';
+    const arxiv = P.arxivUrl || 'https://arxiv.org/abs/2610.16071';
+    const code = P.codeUrl || 'https://github.com/ZBox1005/Dream2Discern';
+    const hf = P.hfUrl ?? '', vsrc = P.videoSrc ?? '';
     return {
       ...this.loopVals(), ...this.caseVals(), ...this.tableVals(),
       isLight: !S.dark, isDark: S.dark, toggleTheme: () => this.setTheme(!S.dark),

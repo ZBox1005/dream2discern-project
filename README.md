@@ -24,7 +24,7 @@ The site is arranged for publishing from the `main` branch's root directory. In 
 - `figures/`, `assets/`: figures and logos. The paper PDF is withheld from the published site until the arXiv page is available.
 - `docs/paper-notes.md`: source notes for the abstract, captions and result numbers.
 
-`arxivUrl`, `codeUrl` and `hfUrl` remain empty until those destinations are available. The BibTeX entry marks the arXiv identifier as pending rather than showing a fabricated ID.
+The page links to the public arXiv preprint and code repository. `hfUrl` stays empty until the Hugging Face paper page is submitted.
 
 The animation is an HTML/JavaScript player, not an MP4. It is isolated in a sandboxed iframe and loops automatically. The published viewer hides its playback bar, Claude Design badge and host-only Export button. Its scale calculation uses the full 16:9 canvas height so hiding the bar does not create black edges. The original file in Downloads was not changed.
 
