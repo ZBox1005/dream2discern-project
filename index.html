@@ -946,7 +946,7 @@ class Component extends DCLogic {
     const P = this.props, S = this.state;
     const arxiv = P.arxivUrl || 'https://arxiv.org/abs/2610.16071';
     const code = P.codeUrl || 'https://github.com/ZBox1005/Dream2Discern';
-    const hf = P.hfUrl ?? '', vsrc = P.videoSrc ?? '';
+    const hf = P.hfUrl || 'https://huggingface.co/papers/2610.16071', vsrc = P.videoSrc ?? '';
     return {
       ...this.loopVals(), ...this.caseVals(), ...this.tableVals(),
       isLight: !S.dark, isDark: S.dark, toggleTheme: () => this.setTheme(!S.dark),
